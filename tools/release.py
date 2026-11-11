@@ -53,10 +53,18 @@ def app_version():
 
 
 def patch(path, old, new, what):
+    """put a line like  NAME = '...'  in a file.  Running setup twice is harmless; an older address is replaced."""
     s = open(path, encoding='utf-8').read()
-    if old not in s:
+    if old in s:                                     # the stock placeholder is still there
+        open(path, 'w', encoding='utf-8').write(s.replace(old, new, 1))
+        return
+    want = re.search(r"('[^']*'|\"[^\"]*\")", new).group(1)
+    m = re.search(re.escape(what) + r" = ('[^']*'|\"[^\"]*\")", s)
+    if not m:
         die('could not find %s in %s (was it changed?)' % (what, os.path.relpath(path, ROOT)))
-    open(path, 'w', encoding='utf-8').write(s.replace(old, new, 1))
+    if m.group(1) == want:
+        return                                       # already right
+    open(path, 'w', encoding='utf-8').write(s[:m.start(1)] + want + s[m.end(1):])
 
 
 def gh(method, url, body=None, ctype='application/json', raw=None, soft=False):
@@ -216,6 +224,12 @@ def push_code():
         items.append({'path': path, 'mode': '100644', 'type': 'blob', 'sha': blob['sha']})
         if n % 50 == 0:
             say('  %d/%d' % (n, len(files)))
+    # latest.json is not part of the source folder: keep the copy that is already up there
+    cur = gh('GET', 'https://api.github.com/repos/%s/git/trees/%s?recursive=0' % (repo, parent), soft=True) if parent else None
+    if cur:
+        for e in cur.get('tree') or []:
+            if e.get('path') == 'latest.json' and e.get('type') == 'blob':
+                items.append({'path': 'latest.json', 'mode': '100644', 'type': 'blob', 'sha': e['sha']})
     tree = gh('POST', 'https://api.github.com/repos/%s/git/trees' % repo, {'tree': items})
     commit = gh('POST', 'https://api.github.com/repos/%s/git/commits' % repo,
                 {'message': 'RongTuli source (version %s)' % app_version(), 'tree': tree['sha'],
