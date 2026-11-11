@@ -318,7 +318,7 @@ public class MainActivity extends Activity {
 
     /** The object "RTAndroid" of the page. Its methods are called on a background thread, one at a time. */
     /** the address of latest.json — change this to where you keep it (GitHub Gist, any web space, a Telegram post's raw text) */
-    static final String UPDATE_URL = "https://gist.githubusercontent.com/OWNER/GISTID/raw/latest.json";
+    static final String UPDATE_URL = "https://raw.githubusercontent.com/musatalukder220-stack/rongtuli/main/latest.json";
 
     /** the version name typed in the package (0.9 and so on) */
     private String appVersion() {

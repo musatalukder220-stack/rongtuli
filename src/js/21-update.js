@@ -17,8 +17,8 @@ const Updater = {};
 (function () {
   const h = U.h;
   /* ---- the owner changes these ---- */
-  Updater.INFO_URL = 'https://gist.githubusercontent.com/OWNER/GISTID/raw/latest.json';   // where latest.json lives
-  Updater.CHANNEL = 'https://t.me/';                                                       // shown when latest.json has no link
+  Updater.INFO_URL = 'https://raw.githubusercontent.com/musatalukder220-stack/rongtuli/main/latest.json';   // where latest.json lives
+  Updater.CHANNEL = 'https://t.me/rongtuli_app';                                                       // shown when latest.json has no link
   /* ---- nothing to change below ---- */
   const CHECK_KEY = 'rt-update-check', SEEN_KEY = 'rt-update-seen';
   const DAY = 24 * 60 * 60 * 1000;
