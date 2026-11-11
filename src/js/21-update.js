@@ -18,7 +18,8 @@ const Updater = {};
   const h = U.h;
   /* ---- the owner changes these ---- */
   Updater.INFO_URL = 'https://raw.githubusercontent.com/musatalukder220-stack/rongtuli/main/latest.json';   // where latest.json lives
-  Updater.CHANNEL = 'https://t.me/rongtuli_app';                                                       // shown when latest.json has no link
+  Updater.CHANNEL = 'https://t.me/rongtuli_app';
+  Updater.NEWS = true;                                                                     // also read the Telegram channel (22-tg.js)                                                       // shown when latest.json has no link
   /* ---- nothing to change below ---- */
   const CHECK_KEY = 'rt-update-check', SEEN_KEY = 'rt-update-seen';
   const DAY = 24 * 60 * 60 * 1000;
@@ -67,14 +68,17 @@ const Updater = {};
   };
 
   /* the sheet itself */
+  let openFor = '';                                          // which version's sheet is already on the screen
   Updater.open = function (info) {
     const u = info || found;
     if (!u) { U.toast('You have the newest version (' + APP_VERSION + ')'); return; }
+    if (openFor === u.version && U.$('#up-go')) return;       // already showing: do not stack two sheets
     let w = null;
     if (/^https?:\/\/t\.me\//.test(u.link)) {
       // a Telegram channel: the app stays whole; the page carries a link to it
       w = new URLSearchParams({ v: u.version, f: '1' });
       if (u.note) w.set('n', u.note);
+      if (u.link) w.set('u', u.link);                    // (the download: MediaFire, Drive, Telegram … whatever the owner posted)
     }
     const go = h('button', { class: 'btn pri', type: 'button', id: 'up-go', text: 'Update' });
     U.onTap(go, () => {
@@ -83,7 +87,7 @@ const Updater = {};
       sh.close();
     });
     const later = h('button', { class: 'btn', type: 'button', id: 'up-later', text: 'Later' });
-    U.onTap(later, () => { keep(SEEN_KEY, u.version); sh.close(); });
+    U.onTap(later, () => { keep(SEEN_KEY, u.version); sh.close(); openFor = ''; });
     const rows = [
       h('p', { class: 'up-h', text: 'A new version is ready' }),
       h('p', { class: 'up-v', text: 'You have ' + APP_VERSION + ' · new is ' + u.version }),
@@ -94,6 +98,7 @@ const Updater = {};
       h('p', { class: 'panel-note dim', text: 'Your work is not touched by an update.' })
     ].filter(Boolean);
     const sh = UI.sheet('Update', h('div', { class: 'panel-pad up' }, rows));
+    openFor = u.version;
     return sh;
   };
 

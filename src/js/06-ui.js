@@ -59,6 +59,8 @@ const UI = {};
     if (on && !d) el.appendChild(h('i', { class: 'dot' }));
     if (!on && d) d.remove();
   };
+  /* a newer version was seen: the home page carries a strip about it */
+  UI.updateStrip = function (info) { try { if (typeof HomeBar !== 'undefined') HomeBar.show(info); } catch (e) { /* the strip is a nicety */ } };
   UI.setPanel = function (node) { U.clear(E.panel); if (node) E.panel.appendChild(node); };
   UI.panelOpenFor = null;      // id of the toolbar item whose panel is showing
   /* show a panel for a toolbar item; tapping the same item again closes it */
@@ -385,7 +387,10 @@ const UI = {};
       h('div', { class: 'home-foot', text: 'Version ' + APP_VERSION + (Native.on ? ' · Android app' : '') + ' · works without internet' })
     ));
   }
-  function showHome() { E.editor.classList.add('hidden'); E.home.classList.remove('hidden'); Folders.refreshHome(); }
+  function showHome() {
+    E.editor.classList.add('hidden'); E.home.classList.remove('hidden'); Folders.refreshHome();
+    try { if (typeof HomeBar !== 'undefined') HomeBar.refresh(); } catch (e) { /* the strip is a nicety */ }
+  }
   function showEditor() {
     E.home.classList.add('hidden'); E.editor.classList.remove('hidden');
     mode = null; View.mode = null; View.overrides.clear(); View.hide.clear();

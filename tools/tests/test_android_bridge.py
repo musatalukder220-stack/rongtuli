@@ -107,6 +107,8 @@ async def main():
             r = await p.evaluate("(async () => { const c = RT.UI.demoCanvas(); const r = await RT.AICut.cut({ canvas: c, key: 'k1', mode: 'auto' }); return { n: r.alpha.length, want: c.width * c.height, pick: r.pick, how: RT.AICut.mode() }; })()")
             check('and runs (in a worker)', r['n'] == r['want'] and r['how'] == 'worker', str(r))
             check('its files came from the app itself', all(('/ai/' + n) in asked for n in ('rtai.js', 'ort.wasm.min.js', 'ort-wasm-simd.wasm', 'u2netp.onnx', 'modnet.onnx')), str(sorted(set(a for a in asked if a.startswith('/ai/')))))
+        # the update news may ask Telegram's own page for the channel — nothing else may leave the app
+        outside = [a for a in outside if 't.me/s/' not in a]
         check('nothing was asked from any other address', not outside, str(outside[:3]))
         s.errors = [e for e in s.errors if 'Canvas2D' not in e]
         s.report()

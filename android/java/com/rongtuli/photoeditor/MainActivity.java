@@ -172,7 +172,9 @@ public class MainActivity extends Activity {
             String scheme = u.getScheme();
             if (scheme == null || !(scheme.equals("https") || scheme.equals("http"))) return null;      // data:, blob:, about: are the web view's own business
             boolean ours = HOST.equalsIgnoreCase(u.getHost());
-            boolean online = "api.openverse.org".equalsIgnoreCase(u.getHost()) || isPicture(u)            // the sticker search and the pictures it returns
+            String uh = u.getHost() == null ? "" : u.getHost().toLowerCase(Locale.US);
+            boolean news = uh.equals("t.me") || uh.equals("www.t.me") || uh.equals("telegram.me");          // the update news
+            boolean online = "api.openverse.org".equalsIgnoreCase(uh) || isPicture(u) || news               // the sticker search and the pictures it returns
                 || isUpdateHost(u);                                                                        // the update check (latest.json)
             if (!ours && !online) return refuse(403, "Blocked");                                          // everything else stays offline
             if (online && !ours) return null;                                                             // let the web view fetch it
@@ -491,6 +493,50 @@ public class MainActivity extends Activity {
                 i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 startActivity(i);
             } catch (Exception e) { Log.w(TAG, "openUrl: " + e); }
+        }
+        /** read the channel's public page as plain text (the update news lives there now).
+         *  Only t.me / telegram.me — nothing else. The answer comes back as window.rtTgText(ok, text). */
+        @JavascriptInterface public void fetchChannel(final String url) {
+            final Thread t = new Thread(new Runnable() {
+                public void run() {
+                    String text = null;
+                    HttpURLConnection c = null;
+                    try {
+                        URL u = new URL(url);
+                        String host = u.getHost() == null ? "" : u.getHost().toLowerCase(Locale.US);
+                        if (!(host.equals("t.me") || host.equals("www.t.me") || host.equals("telegram.me"))) {
+                            postText(false, ""); return;
+                        }
+                        c = (HttpURLConnection) u.openConnection();
+                        c.setConnectTimeout(8000); c.setReadTimeout(10000);
+                        c.setRequestProperty("User-Agent", "Mozilla/5.0 (Linux; Android 10) RongTuli");
+                        c.setRequestProperty("Cache-Control", "no-cache");
+                        if (c.getResponseCode() == 200) {
+                            ByteArrayOutputStream bo = new ByteArrayOutputStream();
+                            InputStream in = c.getInputStream();
+                            byte[] buf = new byte[8192];
+                            int n;
+                            while ((n = in.read(buf)) > 0 && bo.size() < 4000000) bo.write(buf, 0, n);
+                            in.close();
+                            text = bo.toString("UTF-8");
+                        }
+                    } catch (Exception e) {
+                        Log.i(TAG, "channel check: no answer (" + e.getMessage() + ")");
+                    } finally { if (c != null) c.disconnect(); }
+                    postText(text != null, text == null ? "" : text);
+                }
+            });
+            t.start();
+        }
+        private void postText(final boolean ok, final String text) {
+            if (web == null) return;
+            web.post(new Runnable() {
+                public void run() {
+                    try {
+                        web.evaluateJavascript("window.rtTgText && window.rtTgText(" + ok + "," + JSONObject.quote(text) + ")", null);
+                    } catch (Exception e) { Log.w(TAG, "rtTgText: " + e); }
+                }
+            });
         }
         /** back from the update page to the app */
         @JavascriptInterface public void closeUpdate() {

@@ -1,0 +1,166 @@
+'use strict';
+/* ============================================================
+ * 22-tg.js : the update news, read straight from the Telegram channel.
+ *
+ * Why: the owner must be able to bring out a new version WITHOUT any computer, any GitHub,
+ * any assistant — only the phone and the Telegram app.
+ *
+ * Every release is ONE post in the channel, and its first lines are written in a fixed way:
+ *
+ *     RongTuli 0.12
+ *     Better Remove, new frames
+ *     https://www.mediafire.com/file/xxxx/RongTuli-0.12.apk
+ *
+ * Then this file, on every start (at most once a day):
+ *   * opens the channel's public page      https://t.me/s/<channel>   (Telegram's own web view,
+ *     which needs no app key and no login),
+ *   * reads the newest posts, finds the first line that looks like  <name> <version>,
+ *   * takes the line under it as the note, and the first http(s) link as the download,
+ *   * if that version is newer than this app, the home page shows a strip and the Update sheet appears.
+ *
+ * The download link may be MediaFire, Google Drive, Dropbox, a Telegram post, anything that
+ * starts with https:// — the user taps it and their browser downloads the .apk.
+ * ============================================================ */
+const TgNews = {};
+(function () {
+  const NAME = 'RongTuli';
+  const KEY = 'rt-tg-check', SEEN = 'rt-tg-seen';
+  const DAY = 24 * 60 * 60 * 1000;
+
+  /* the channel, as the owner types it: "@rongtuli_app", "rongtuli_app" or a full link */
+  TgNews.channel = function () {
+    let c = String(TgNews.channelId || '').trim();
+    c = c.replace(/^https?:\/\/(t\.me|telegram\.me)\//i, '').replace(/^s\//, '').replace(/^@/, '').replace(/\/.*$/, '');
+    return c;
+  };
+  TgNews.channelId = 'rongtuli_app';                     // ← the owner changes only this line
+  TgNews.url = () => 'https://t.me/s/' + TgNews.channel();
+  const ask = (k) => { try { return localStorage.getItem(k) || ''; } catch (e) { return ''; } };
+  const keep = (k, v) => { try { localStorage.setItem(k, v); } catch (e) { /* full or blocked */ } };
+
+  /* "0.12" > "0.10" > "0.9", compared part by part as numbers */
+  function newer(a, b) {
+    const x = String(a || '0').split('.').map((n) => parseInt(n, 10) || 0);
+    const y = String(b || '0').split('.').map((n) => parseInt(n, 10) || 0);
+    for (let i = 0; i < Math.max(x.length, y.length); i++) {
+      const p = x[i] || 0, q = y[i] || 0;
+      if (p !== q) return p > q;
+    }
+    return false;
+  }
+  TgNews.newer = newer;
+
+  function decode(s) {
+    return String(s || '')
+      .replace(/<br\s*\/?>/gi, '\n')
+      .replace(/<[^>]*>/g, '')
+      .replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>')
+      .replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&#(\d+);/g, (m, d) => String.fromCharCode(+d));
+  }
+
+  /* every post on the channel's public page: { text, hrefs } — oldest first, as Telegram writes the page */
+  function posts(html) {
+    const out = [];
+    const re = /<div class="tgme_widget_message_text[^"]*"[^>]*>([\s\S]*?)<\/div>/g;
+    let m;
+    while ((m = re.exec(html))) {
+      const chunk = m[1], hrefs = [];
+      const hr = /href="([^"]+)"/g;
+      let a;
+      while ((a = hr.exec(chunk))) {
+        let u = a[1];
+        if (u.slice(0, 2) === '//') u = 'https:' + u;
+        if (/^https?:\/\//i.test(u) && hrefs.indexOf(u) < 0) hrefs.push(u);
+      }
+      out.push({ text: decode(chunk), hrefs: hrefs });
+    }
+    return out;                                          // the page lists them oldest first
+  }
+  TgNews.posts = posts;
+
+  /* one post → { version, note, link } or null.  The download may be the visible text or the link behind
+     a word like "Download", so both are looked at. */
+  function read(post) {
+    const text = typeof post === 'string' ? post : String((post && post.text) || '');
+    const hrefs = (post && post.hrefs) || [];
+    const lines = text.split('\n').map((s) => s.trim()).filter(Boolean);
+    for (let i = 0; i < lines.length; i++) {
+      const m = lines[i].match(new RegExp('^' + NAME + '\\s+v?(\\d+(?:\\.\\d+)*)\\b', 'i'));
+      if (!m) continue;
+      let note = '', link = '';
+      for (let j = i + 1; j < lines.length && j < i + 6; j++) {
+        const l = lines[j];
+        if (!link) { const u = l.match(/https?:\/\/\S+/); if (u) { link = u[0]; continue; } }
+        if (!note && l.length > 1) note = l;
+      }
+      if (!link) link = hrefs.find((u) => !/^https?:\/\/(t\.me|telegram\.me)\//i.test(u)) || '';
+      return { version: m[1], note: note.slice(0, 140), link: link };
+    }
+    return null;
+  }
+  TgNews.read = read;
+
+  /* the channel's page as text.  Inside the Android app a plain fetch is refused by the WebView (CORS),
+     so there the page is read by the app's own Java half (RTAndroid.fetchChannel → rtTgText). */
+  let waiting = null;
+  window.rtTgText = function (ok, text) {
+    if (waiting) { const w = waiting; waiting = null; w(ok && text ? String(text) : null); }
+  };
+  function pageText() {
+    const url = TgNews.url() + '?t=' + Math.floor(Date.now() / 60000);
+    if (window.RTAndroid && window.RTAndroid.fetchChannel) {
+      return new Promise((done) => {
+        waiting = done;
+        try { window.RTAndroid.fetchChannel(url); } catch (e) { waiting = null; done(null); }
+        setTimeout(() => { if (waiting === done) { waiting = null; done(null); } }, 15000);
+      });
+    }
+    /* a plain page can only read it when it is served over http(s) — and Telegram sends no CORS header,
+       so in practice the channel is read by the Android app's own half. A page opened from the phone's
+       storage (file://) cannot read it at all: quiet about that, latest.json does the job there. */
+    if (!/^https?:$/.test(location.protocol) || (U.sandboxed && U.sandboxed())) return Promise.resolve(null);
+    return fetch(url, { cache: 'no-store' }).then((r) => (r.ok ? r.text() : null)).catch(() => null);
+  }
+
+  /* find the newest known version in the channel (quiet about every kind of trouble) */
+  TgNews.fetch = async function () {
+    const html = await pageText();
+    if (!html) return null;
+    const all = posts(html).reverse();                    // newest first
+    for (const p of all) {
+      const got = read(p);
+      if (got && got.version) return got;
+    }
+    return null;
+  };
+
+  /* at start (and at most once a day): is there something newer? */
+  TgNews.check = async function (force) {
+    const last = +(ask(KEY) || 0);
+    if (!force && Date.now() - last < DAY) return TgNews.found || null;
+    keep(KEY, String(Date.now()));
+    try {
+      const got = await TgNews.fetch();
+      if (!got || !newer(got.version, APP_VERSION)) { TgNews.found = null; return null; }
+      if (!TgNews.configured()) return null;
+      got.link = got.link || ('https://t.me/' + TgNews.channel());
+      TgNews.found = got;
+      try { UI.updateStrip(got); } catch (e) { /* the strip is a nicety */ }
+      return got;
+    } catch (e) {
+      return null;                                       // offline, or Telegram did not answer: no trouble
+    }
+  };
+
+  /* is the channel really set up? (a phone with no channel yet must not be told about an update) */
+  TgNews.configured = () => /^[A-Za-z0-9_]{4,}$/.test(TgNews.channel()) && TgNews.channel().toLowerCase() !== 'your_channel';
+
+  TgNews.start = function () {
+    setTimeout(() => { TgNews.check(false); }, 6000);    // a few seconds after the app is ready
+  };
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) TgNews.check(false);
+  });
+  TgNews.seen = () => ask(SEEN);
+  TgNews.saw = (v) => keep(SEEN, v);
+})();
