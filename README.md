@@ -158,6 +158,12 @@ A tool of the grid works on the selected photo layer, otherwise on the backgroun
   With the AI add-on a chip **Person** picks the person in the picture (PicsArt's "Person"); the rest of the picture
   then stays untouched and nothing is copied from the other people in it. Big marks on busy backgrounds are still
   not PicsArt level.
+* Stage 12 (version 1.0): the **update news comes from the owner's Telegram channel** — every release is one post
+  (`RongTuli 1.1` / a line about it / the download link), and the app reads the channel's public page itself
+  (in the Android app the Java half fetches it, so no permission and no CORS trouble). A newer version shows a
+  strip on the **home page** ("New version 1.1 … [Update]") and the sheet, and Update leads to the download.
+  `latest.json` (jsDelivr + raw) stays as a second source; `tools/publish.py` uploads an APK and writes it.
+  Step-by-step Bengali guide: `docs/publish-bn.md`.
 * Other AI features (by choice): none.
 * The web app is only tested in phone-sized headless Chromium. **The APK has never been run on a phone or emulator.**
 
