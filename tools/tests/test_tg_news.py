@@ -5,7 +5,7 @@ from pw_common import *
 
 PAGE = '''<html><body>
 <div class="tgme_widget_message_text js-message_text" dir="auto">RongTuli 0.9<br/>old version<br/><a href="https://old.example/x.apk">https://old.example/x.apk</a></div>
-<div class="tgme_widget_message_text js-message_text" dir="auto">RongTuli 0.12<br/>Better Remove, new frames<br/><a href="https://www.mediafire.com/file/abc/RongTuli-0.12.apk" target="_blank">Download</a></div>
+<div class="tgme_widget_message_text js-message_text" dir="auto">RongTuli 9.12<br/>Better Remove, new frames<br/><a href="https://www.mediafire.com/file/abc/RongTuli-9.12.apk" target="_blank">Download</a></div>
 <div class="tgme_widget_message_text js-message_text" dir="auto">Hello everyone, a new frame pack is here.</div>
 </body></html>'''
 
@@ -39,15 +39,15 @@ async def main():
         await p.evaluate(FAKE + "(" + json.dumps(PAGE) + ")")
         got = await p.evaluate("TgNews.fetch().then(v => v || 'none')")
         check('the newest post is read (version, note, link behind a word)',
-              got and got.get('version') == '0.12' and 'MediaFire' not in (got.get('note') or '')
+              got and got.get('version') == '9.12' and 'MediaFire' not in (got.get('note') or '')
               and got.get('link', '').startswith('https://www.mediafire.com/'), got)
 
         # the home page carries the strip
         await p.evaluate("TgNews.check(true)")
         await p.wait_for_timeout(500)
         strip = await p.evaluate("(() => { const b = document.querySelector('#newver'); return b ? b.textContent : 'none'; })()")
-        check('the home page shows "New version 0.12" with the note and Update',
-              'New version 0.12' in strip and 'Better Remove' in strip and 'Update' in strip, strip)
+        check('the home page shows "New version 9.12" with the note and Update',
+              'New version 9.12' in strip and 'Better Remove' in strip and 'Update' in strip, strip)
         await s.shot('tg_strip')
 
         # Update → the sheet → the download link goes with it
@@ -64,13 +64,16 @@ async def main():
         await p.click('#nv-x')
         await p.wait_for_timeout(200)
         check('× hides the strip', not await p.evaluate("!!document.querySelector('#newver')"))
-        check('and remembers it for that version', await p.evaluate("localStorage.getItem('rt-strip-hide')") == '0.12')
+        check('and remembers it for that version', await p.evaluate("localStorage.getItem('rt-strip-hide')") == '9.12')
 
         # a version that is not newer (or no channel) changes nothing
         await p.evaluate("localStorage.clear()")
-        await p.evaluate(FAKE + "(" + json.dumps('<div class="tgme_widget_message_text">RongTuli 0.10<br/>same<br/>https://x.example/a.apk</div>') + ")")
-        same = await p.evaluate("TgNews.fetch().then(v => v || 'none')")
-        check('the same version is read but not news', same and same.get('version') == '0.10' and await p.evaluate("TgNews.check(true).then(v => v || 'none')") == 'none', same)
+        await p.evaluate(FAKE + "(" + json.dumps('<div class="tgme_widget_message_text">RongTuli " + await p.evaluate("APP_VERSION") + "<br/>same<br/>https://x.example/a.apk</div>') + ")")
+        cur = await p.evaluate("APP_VERSION")
+        same = await p.evaluate("(html => { const real = window.fetch; window.fetch = async (u, o) => String(u).includes('t.me/s/') ? new Response(html, {status: 200, headers: {'content-type': 'text/html'}}) : real(u, o); return TgNews.fetch(); })" + "(" + json.dumps('<div class="tgme_widget_message_text">RongTuli ' + str(cur) + '<br/>same<br/>https://x.example/a.apk</div>') + ")")
+        news = await p.evaluate("TgNews.check(true).then(v => v || 'none')")
+        check('the same version is read but not news',
+              isinstance(same, dict) and same.get('version') == cur and news == 'none', '%s / %s' % (same, news))
         await p.evaluate("TgNews.channelId = 'your_channel'")
         check('an unset channel is ignored', await p.evaluate("TgNews.configured()") is False)
         await p.evaluate("TgNews.channelId = 'rongtuli_app'")

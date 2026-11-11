@@ -17,7 +17,13 @@ const Updater = {};
 (function () {
   const h = U.h;
   /* ---- the owner changes these ---- */
-  Updater.INFO_URL = 'https://raw.githubusercontent.com/musatalukder220-stack/rongtuli/main/latest.json';   // where latest.json lives
+  /* where latest.json lives.  Two copies of the same file are asked in turn: GitHub's mirror
+     (cdn.jsdelivr.net) answers at once with the newest text, the plain raw address is the fallback. */
+  Updater.INFO_URLS = [
+    'https://cdn.jsdelivr.net/gh/musatalukder220-stack/rongtuli@main/latest.json',
+    'https://raw.githubusercontent.com/musatalukder220-stack/rongtuli/main/latest.json'
+  ];
+  Updater.INFO_URL = Updater.INFO_URLS[0];
   Updater.CHANNEL = 'https://t.me/rongtuli_app';
   Updater.NEWS = true;                                                                     // also read the Telegram channel (22-tg.js)                                                       // shown when latest.json has no link
   /* ---- nothing to change below ---- */
@@ -49,9 +55,15 @@ const Updater = {};
     keep(CHECK_KEY, String(Date.now()));
     checked = Date.now();
     try {
-      const r = await fetch(Updater.INFO_URL + (Updater.INFO_URL.indexOf('?') < 0 ? '?' : '&') + 't=' + Math.floor(Date.now() / 60000));
-      if (!r.ok) return found;
-      const j = await r.json();
+      let j = null;
+      for (const url of (Updater.INFO_URLS && Updater.INFO_URLS.length ? Updater.INFO_URLS : [Updater.INFO_URL])) {
+        try {
+          const r = await fetch(url + (url.indexOf('?') < 0 ? '?' : '&') + 't=' + Math.floor(Date.now() / 60000), { cache: 'no-store' });
+          if (!r.ok) continue;
+          const got = await r.json();
+          if (got && got.version) { j = got; break; }
+        } catch (e) { /* try the next address */ }
+      }
       if (!j || !j.version) return found;
       if (!newer(j.version, APP_VERSION)) { found = null; return null; }
       found = {
@@ -73,19 +85,12 @@ const Updater = {};
     const u = info || found;
     if (!u) { U.toast('You have the newest version (' + APP_VERSION + ')'); return; }
     if (openFor === u.version && U.$('#up-go')) return;       // already showing: do not stack two sheets
-    let w = null;
-    if (/^https?:\/\/t\.me\//.test(u.link)) {
-      // a Telegram channel: the app stays whole; the page carries a link to it
-      w = new URLSearchParams({ v: u.version, f: '1' });
-      if (u.note) w.set('n', u.note);
-      if (u.link) w.set('u', u.link);                    // (the download: MediaFire, Drive, Telegram … whatever the owner posted)
-    }
+    /* the steps page inside the app (download → install → your work stays), whichever host holds the APK */
+    const w = new URLSearchParams({ v: u.version, f: '1' });
+    if (u.note) w.set('n', u.note);
+    if (u.link) w.set('u', u.link);                      // MediaFire, Drive, Telegram, GitHub — whatever the owner posted
     const go = h('button', { class: 'btn pri', type: 'button', id: 'up-go', text: 'Update' });
-    U.onTap(go, () => {
-      if (w) { sh.close(); location.href = 'update.html?' + w.toString(); return; }
-      try { Native.openUrl(u.link); } catch (e) { location.href = u.link; }
-      sh.close();
-    });
+    U.onTap(go, () => { sh.close(); location.href = 'update.html?' + w.toString(); });
     const later = h('button', { class: 'btn', type: 'button', id: 'up-later', text: 'Later' });
     U.onTap(later, () => { keep(SEEN_KEY, u.version); sh.close(); openFor = ''; });
     const rows = [

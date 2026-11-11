@@ -142,7 +142,7 @@ const TgNews = {};
     try {
       const got = await TgNews.fetch();
       if (!got || !newer(got.version, APP_VERSION)) { TgNews.found = null; return null; }
-      if (!TgNews.configured()) return null;
+      if (!TgNews.configured() || /your_channel/i.test(TgNews.channel())) return null;
       got.link = got.link || ('https://t.me/' + TgNews.channel());
       TgNews.found = got;
       try { UI.updateStrip(got); } catch (e) { /* the strip is a nicety */ }
