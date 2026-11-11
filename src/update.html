@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#101010">
+<title>Update RongTuli</title>
+<style>
+  :root { color-scheme: dark; }
+  html, body { margin: 0; padding: 0; background: #101010; color: #ececf1; font: 16px/1.5 system-ui, -apple-system, "Noto Sans", Roboto, Arial, sans-serif; }
+  body { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 28px 20px calc(28px + env(safe-area-inset-bottom)); box-sizing: border-box; text-align: center; }
+  .card { width: 100%; max-width: 430px; background: #191919; border: 1px solid #262626; border-radius: 20px; padding: 22px 18px; box-sizing: border-box; }
+  h1 { font-size: 20px; margin: 4px 0 6px; }
+  .v { color: #a9a9b8; font-size: 14px; margin: 0 0 14px; }
+  .note { background: #141414; border: 1px solid #2a2a2a; border-radius: 12px; padding: 10px 12px; margin: 0 0 16px; font-size: 14.5px; text-align: left; white-space: pre-wrap; }
+  .btn { display: block; width: 100%; box-sizing: border-box; border: 0; border-radius: 14px; padding: 15px 16px; font: inherit; font-weight: 600; margin: 8px 0 0; cursor: pointer; }
+  .pri { background: linear-gradient(135deg, #ff5fa2, #c04bf2 55%, #6a5cff); color: #fff; }
+  .sec { background: #242424; color: #ececf1; }
+  .small { color: #8b8b98; font-size: 13px; margin: 14px 0 0; }
+  ol { text-align: left; color: #c9c9d4; font-size: 14px; padding-left: 20px; margin: 14px 0 0; }
+  ol li { margin-bottom: 6px; }
+  .hidden { display: none; }
+</style>
+</head>
+<body>
+<div class="card">
+  <h1>Update RongTuli</h1>
+  <p class="v" id="v">A new version is ready.</p>
+  <p class="note hidden" id="note"></p>
+  <button class="btn pri" id="go" type="button">Open the download link</button>
+  <button class="btn sec" id="back" type="button">Back to the app</button>
+  <ol id="steps">
+    <li>Tap <b>Open the download link</b> and download the new app (.apk).</li>
+    <li>Open the downloaded file and tap <b>Install</b> (allow “Install unknown apps” once if asked).</li>
+    <li>The new version installs over the old one — your pictures and projects stay.</li>
+  </ol>
+  <p class="small" id="hint"></p>
+</div>
+<script>/*JS*/</script>
+<script>
+(function () {
+  var q = new URLSearchParams(location.search);
+  var v = q.get('v') || '', n = q.get('n') || '', link = q.get('u') || '';
+  document.getElementById('v').textContent = v ? 'A new version is ready: ' + v : 'A new version is ready.';
+  if (n) { var el = document.getElementById('note'); el.textContent = n; el.classList.remove('hidden'); }
+  var go = document.getElementById('go');
+  if (!/^https?:\/\//.test(link)) {                     // no link in the address: ask the owner's settings for it
+    try { if (window.RT_SETTINGS && window.RT_SETTINGS.channel) link = window.RT_SETTINGS.channel; } catch (e) { /* nothing to do */ }
+  }
+  go.addEventListener('click', function () {
+    if (!link) { document.getElementById('hint').textContent = 'No download link is set yet.'; return; }
+    try { if (window.RTAndroid && window.RTAndroid.openUrl) { window.RTAndroid.openUrl(link); return; } } catch (e) { /* fall through */ }
+    location.href = link;
+  });
+  document.getElementById('back').addEventListener('click', function () {
+    try { if (window.RTAndroid && window.RTAndroid.closeUpdate) { window.RTAndroid.closeUpdate(); return; } } catch (e) { /* fall through */ }
+    history.length > 1 ? history.back() : (location.href = 'index.html');
+  });
+  if (!link) { document.getElementById('steps').classList.add('hidden'); document.getElementById('hint').textContent = 'The download link has not been set yet.'; }
+})();
+</script>
+</body>
+</html>

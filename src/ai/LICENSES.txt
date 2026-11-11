@@ -1,0 +1,16 @@
+The files in this folder and where they come from
+
+ort.wasm.min.js, ort-wasm-simd.wasm
+    ONNX Runtime Web 1.17.3, (c) Microsoft Corporation, MIT License
+    https://github.com/microsoft/onnxruntime
+
+u2netp.onnx
+    U^2-Net (small), Xuebin Qin and others, Apache License 2.0
+    https://github.com/xuebinqin/U-2-Net   (ONNX file from https://github.com/danielgatis/rembg, MIT License)
+
+modnet.onnx
+    MODNet: Trimap-Free Portrait Matting in Real Time, Zhanghan Ke and others, Apache License 2.0
+    https://github.com/ZHKKKe/MODNet       (ONNX file from https://huggingface.co/Xenova/modnet)
+
+rtai.js
+    part of RongTuli

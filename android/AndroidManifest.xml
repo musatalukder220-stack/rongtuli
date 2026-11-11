@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- RongTuli as an Android app: one screen with a web view that shows the files of ../app (packed into the APK). -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.rongtuli.photoeditor">
+
+    <!-- The page and all its files come out of the APK itself (MainActivity answers every request and refuses
+         all other addresses). The permission is declared only because some web views will not load a page without it. -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Android 9 and older need this to put a picture into the gallery; newer versions do not. -->
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="28" />
+
+    <application
+        android:label="@string/app_name"
+        android:icon="@mipmap/ic_launcher"
+        android:theme="@style/App"
+        android:allowBackup="true"
+        android:hardwareAccelerated="true"
+        android:supportsRtl="true"
+        android:usesCleartextTraffic="false">
+
+        <!-- the web view shows only our own files: no address has to be checked online, no usage numbers are sent -->
+        <meta-data android:name="android.webkit.WebView.EnableSafeBrowsing" android:value="false" />
+        <meta-data android:name="android.webkit.WebView.MetricsOptOut" android:value="true" />
+
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:launchMode="singleTask"
+            android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboard|keyboardHidden|navigation|uiMode|density|fontScale|layoutDirection|locale"
+            android:windowSoftInputMode="adjustResize">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <!-- hands a finished picture or project file to another app when the user presses Share -->
+        <provider
+            android:name=".ShareProvider"
+            android:authorities="com.rongtuli.photoeditor.share"
+            android:exported="false"
+            android:grantUriPermissions="true" />
+    </application>
+</manifest>

@@ -1,0 +1,342 @@
+[
+ {
+  "family": "Poppins",
+  "weight": "400",
+  "style": "normal",
+  "group": "en",
+  "subset": "latin",
+  "range": "U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD",
+  "file": "Poppins-400-latin.woff2",
+  "bytes": 7884
+ },
+ {
+  "family": "Poppins",
+  "weight": "700",
+  "style": "normal",
+  "group": "en",
+  "subset": "latin",
+  "range": "U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD",
+  "file": "Poppins-700-latin.woff2",
+  "bytes": 7816
+ },
+ {
+  "family": "Bebas Neue",
+  "weight": "400",
+  "style": "normal",
+  "group": "en",
+  "subset": "latin",
+  "range": "U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD",
+  "file": "BebasNeue-400-latin.woff2",
+  "bytes": 13768
+ },
+ {
+  "family": "Anton",
+  "weight": "400",
+  "style": "normal",
+  "group": "en",
+  "subset": "latin",
+  "range": "U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD",
+  "file": "Anton-400-latin.woff2",
+  "bytes": 18612
+ },
+ {
+  "family": "Oswald",
+  "weight": "500",
+  "style": "normal",
+  "group": "en",
+  "subset": "latin",
+  "range": "U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD",
+  "file": "Oswald-500-latin.woff2",
+  "bytes": 12704
+ },
+ {
+  "family": "Playfair Display",
+  "weight": "700",
+  "style": "normal",
+  "group": "en",
+  "subset": "latin",
+  "range": "U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD",
+  "file": "PlayfairDisplay-700-latin.woff2",
+  "bytes": 23224
+ },
+ {
+  "family": "Abril Fatface",
+  "weight": "400",
+  "style": "normal",
+  "group": "en",
+  "subset": "latin",
+  "range": "U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD",
+  "file": "AbrilFatface-400-latin.woff2",
+  "bytes": 13156
+ },
+ {
+  "family": "Cinzel",
+  "weight": "700",
+  "style": "normal",
+  "group": "en",
+  "subset": "latin",
+  "range": "U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD",
+  "file": "Cinzel-700-latin.woff2",
+  "bytes": 15184
+ },
+ {
+  "family": "Pacifico",
+  "weight": "400",
+  "style": "normal",
+  "group": "en",
+  "subset": "latin",
+  "range": "U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD",
+  "file": "Pacifico-400-latin.woff2",
+  "bytes": 32280
+ },
+ {
+  "family": "Lobster",
+  "weight": "400",
+  "style": "normal",
+  "group": "en",
+  "subset": "latin",
+  "range": "U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD",
+  "file": "Lobster-400-latin.woff2",
+  "bytes": 33844
+ },
+ {
+  "family": "Dancing Script",
+  "weight": "700",
+  "style": "normal",
+  "group": "en",
+  "subset": "latin",
+  "range": "U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD",
+  "file": "DancingScript-700-latin.woff2",
+  "bytes": 25444
+ },
+ {
+  "family": "Great Vibes",
+  "weight": "400",
+  "style": "normal",
+  "group": "en",
+  "subset": "latin",
+  "range": "U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD",
+  "file": "GreatVibes-400-latin.woff2",
+  "bytes": 42800
+ },
+ {
+  "family": "Caveat",
+  "weight": "700",
+  "style": "normal",
+  "group": "en",
+  "subset": "latin",
+  "range": "U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD",
+  "file": "Caveat-700-latin.woff2",
+  "bytes": 51020
+ },
+ {
+  "family": "Permanent Marker",
+  "weight": "400",
+  "style": "normal",
+  "group": "en",
+  "subset": "latin",
+  "range": "U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD",
+  "file": "PermanentMarker-400-latin.woff2",
+  "bytes": 29564
+ },
+ {
+  "family": "Bangers",
+  "weight": "400",
+  "style": "normal",
+  "group": "en",
+  "subset": "latin",
+  "range": "U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD",
+  "file": "Bangers-400-latin.woff2",
+  "bytes": 23528
+ },
+ {
+  "family": "Righteous",
+  "weight": "400",
+  "style": "normal",
+  "group": "en",
+  "subset": "latin",
+  "range": "U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD",
+  "file": "Righteous-400-latin.woff2",
+  "bytes": 12756
+ },
+ {
+  "family": "Hind Siliguri",
+  "weight": "400",
+  "style": "normal",
+  "group": "bn",
+  "subset": "bengali",
+  "range": "U+0951-0952, U+0964-0965, U+0980-09FE, U+1CD0, U+1CD2, U+1CD5-1CD6, U+1CD8, U+1CE1, U+1CEA, U+1CED, U+1CF2, U+1CF5-1CF7, U+200C-200D, U+20B9, U+25CC, U+A8F1, U+11DF0-11DF1",
+  "file": "HindSiliguri-400-bengali.woff2",
+  "bytes": 71076
+ },
+ {
+  "family": "Hind Siliguri",
+  "weight": "400",
+  "style": "normal",
+  "group": "bn",
+  "subset": "latin",
+  "range": "U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD",
+  "file": "HindSiliguri-400-latin.woff2",
+  "bytes": 14472
+ },
+ {
+  "family": "Hind Siliguri",
+  "weight": "700",
+  "style": "normal",
+  "group": "bn",
+  "subset": "bengali",
+  "range": "U+0951-0952, U+0964-0965, U+0980-09FE, U+1CD0, U+1CD2, U+1CD5-1CD6, U+1CD8, U+1CE1, U+1CEA, U+1CED, U+1CF2, U+1CF5-1CF7, U+200C-200D, U+20B9, U+25CC, U+A8F1, U+11DF0-11DF1",
+  "file": "HindSiliguri-700-bengali.woff2",
+  "bytes": 72956
+ },
+ {
+  "family": "Hind Siliguri",
+  "weight": "700",
+  "style": "normal",
+  "group": "bn",
+  "subset": "latin",
+  "range": "U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD",
+  "file": "HindSiliguri-700-latin.woff2",
+  "bytes": 14480
+ },
+ {
+  "family": "Baloo Da 2",
+  "weight": "700",
+  "style": "normal",
+  "group": "bn",
+  "subset": "bengali",
+  "range": "U+0951-0952, U+0964-0965, U+0980-09FE, U+1CD0, U+1CD2, U+1CD5-1CD6, U+1CD8, U+1CE1, U+1CEA, U+1CED, U+1CF2, U+1CF5-1CF7, U+200C-200D, U+20B9, U+25CC, U+A8F1, U+11DF0-11DF1",
+  "file": "BalooDa2-700-bengali.woff2",
+  "bytes": 47304
+ },
+ {
+  "family": "Baloo Da 2",
+  "weight": "700",
+  "style": "normal",
+  "group": "bn",
+  "subset": "latin",
+  "range": "U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD",
+  "file": "BalooDa2-700-latin.woff2",
+  "bytes": 19108
+ },
+ {
+  "family": "Galada",
+  "weight": "400",
+  "style": "normal",
+  "group": "bn",
+  "subset": "bengali",
+  "range": "U+0951-0952, U+0964-0965, U+0980-09FE, U+1CD0, U+1CD2, U+1CD5-1CD6, U+1CD8, U+1CE1, U+1CEA, U+1CED, U+1CF2, U+1CF5-1CF7, U+200C-200D, U+20B9, U+25CC, U+A8F1, U+11DF0-11DF1",
+  "file": "Galada-400-bengali.woff2",
+  "bytes": 47168
+ },
+ {
+  "family": "Galada",
+  "weight": "400",
+  "style": "normal",
+  "group": "bn",
+  "subset": "latin",
+  "range": "U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD",
+  "file": "Galada-400-latin.woff2",
+  "bytes": 20244
+ },
+ {
+  "family": "Atma",
+  "weight": "600",
+  "style": "normal",
+  "group": "bn",
+  "subset": "bengali",
+  "range": "U+0951-0952, U+0964-0965, U+0980-09FE, U+1CD0, U+1CD2, U+1CD5-1CD6, U+1CD8, U+1CE1, U+1CEA, U+1CED, U+1CF2, U+1CF5-1CF7, U+200C-200D, U+20B9, U+25CC, U+A8F1, U+11DF0-11DF1",
+  "file": "Atma-600-bengali.woff2",
+  "bytes": 55268
+ },
+ {
+  "family": "Atma",
+  "weight": "600",
+  "style": "normal",
+  "group": "bn",
+  "subset": "latin",
+  "range": "U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD",
+  "file": "Atma-600-latin.woff2",
+  "bytes": 22960
+ },
+ {
+  "family": "Noto Serif Bengali",
+  "weight": "700",
+  "style": "normal",
+  "group": "bn",
+  "subset": "bengali",
+  "range": "U+0951-0952, U+0964-0965, U+0980-09FE, U+1CD0, U+1CD2, U+1CD5-1CD6, U+1CD8, U+1CE1, U+1CEA, U+1CED, U+1CF2, U+1CF5-1CF7, U+200C-200D, U+20B9, U+25CC, U+A8F1, U+11DF0-11DF1",
+  "file": "NotoSerifBengali-700-bengali.woff2",
+  "bytes": 71628
+ },
+ {
+  "family": "Noto Serif Bengali",
+  "weight": "700",
+  "style": "normal",
+  "group": "bn",
+  "subset": "latin",
+  "range": "U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD",
+  "file": "NotoSerifBengali-700-latin.woff2",
+  "bytes": 11804
+ },
+ {
+  "family": "Tiro Bangla",
+  "weight": "400",
+  "style": "normal",
+  "group": "bn",
+  "subset": "bengali",
+  "range": "U+0951-0952, U+0964-0965, U+0980-09FE, U+1CD0, U+1CD2, U+1CD5-1CD6, U+1CD8, U+1CE1, U+1CEA, U+1CED, U+1CF2, U+1CF5-1CF7, U+200C-200D, U+20B9, U+25CC, U+A8F1, U+11DF0-11DF1",
+  "file": "TiroBangla-400-bengali.woff2",
+  "bytes": 81932
+ },
+ {
+  "family": "Tiro Bangla",
+  "weight": "400",
+  "style": "normal",
+  "group": "bn",
+  "subset": "latin",
+  "range": "U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD",
+  "file": "TiroBangla-400-latin.woff2",
+  "bytes": 26892
+ },
+ {
+  "family": "Mina",
+  "weight": "700",
+  "style": "normal",
+  "group": "bn",
+  "subset": "bengali",
+  "range": "U+0951-0952, U+0964-0965, U+0980-09FE, U+1CD0, U+1CD2, U+1CD5-1CD6, U+1CD8, U+1CE1, U+1CEA, U+1CED, U+1CF2, U+1CF5-1CF7, U+200C-200D, U+20B9, U+25CC, U+A8F1, U+11DF0-11DF1",
+  "file": "Mina-700-bengali.woff2",
+  "bytes": 35944
+ },
+ {
+  "family": "Mina",
+  "weight": "700",
+  "style": "normal",
+  "group": "bn",
+  "subset": "latin",
+  "range": "U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD",
+  "file": "Mina-700-latin.woff2",
+  "bytes": 12328
+ },
+ {
+  "family": "Neuton",
+  "weight": "400",
+  "style": "normal",
+  "group": "en",
+  "subset": "latin",
+  "range": "U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD",
+  "file": "Neuton-400-latin.woff2",
+  "bytes": 19588
+ },
+ {
+  "family": "Amaranth",
+  "weight": "400",
+  "style": "normal",
+  "group": "en",
+  "subset": "latin",
+  "range": "U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD",
+  "file": "Amaranth-400-latin.woff2",
+  "bytes": 26216
+ }
+]
