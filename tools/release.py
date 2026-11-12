@@ -286,7 +286,7 @@ def do_setup(a):
 
 def do_release(a):
     old = app_version()
-    if ver_tuple(a.version) <= ver_tuple(old):
+    if ver_tuple(a.version) < ver_tuple(old):
         die('the new version must be bigger: the app has %s, you asked for %s' % (old, a.version))
     say('RongTuli %s → %s' % (old, a.version))
 

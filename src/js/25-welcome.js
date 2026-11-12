@@ -14,9 +14,8 @@
  *   ║   [   CLOSE   ]        [   JOIN NOW   ]          ║
  *   ╚══════════════════════════════════════════════════╝
  *
- * It comes once when the app is opened for the first time and once more after every new
- * install (the app remembers the version it last said hello for).  "Don't show this again"
- * is remembered for good.  It does not block anything: CLOSE simply puts it away.
+ * It comes EVERY time the app is opened, until "Don't show this again" is ticked; after that
+ * it never comes back.  It does not block anything: CLOSE simply puts it away.
  * ============================================================ */
 const Welcome = {};
 (function () {
@@ -28,10 +27,11 @@ const Welcome = {};
 
   Welcome.channel = () => (typeof TgNews !== 'undefined' && TgNews.channel ? TgNews.channel() : CHANNEL);
 
+  /* The owner's rule (1.6): the welcome card comes on EVERY open of the app, until
+     "Don't show this again" is ticked — then it never comes back. */
   Welcome.wanted = function () {
     if (/[?&]test=1\b/.test(location.search)) return false;    // a test page (the cards would cover it)
-    if (get(KEY_OFF) === '1') return false;              // "Don't show this again" was ticked
-    return get(KEY_VER) !== APP_VERSION;                 // first open, or a new install
+    return get(KEY_OFF) !== '1';                          // only the tick stops it for good
   };
 
   function joinLink() {
@@ -48,7 +48,7 @@ const Welcome = {};
     const join = h('button', { class: 'wel-join', type: 'button', id: 'wel-join', text: 'JOIN NOW' });
     const card = h('div', { class: 'welcard', role: 'dialog', 'aria-label': 'Welcome' },
       h('div', { class: 'wel-hero' },
-        h('div', { class: 'wel-logo' }, h('div', { class: 'wel-logo-in', html: I.logo(46) })),
+        h('div', { class: 'wel-logo' }, h('div', { class: 'wel-logo-in', html: I.logo(60, true) })),
         h('div', { class: 'wel-mid' },
           h('div', { class: 'wel-pill', text: 'Welcome' }),
           h('div', { class: 'wel-handle', text: '@' + Welcome.channel() }))),
@@ -61,8 +61,8 @@ const Welcome = {};
     document.body.appendChild(bg);
 
     const done = () => {
-      if (tick.checked) set(KEY_OFF, '1');
-      set(KEY_VER, APP_VERSION);                          // (also for CLOSE: the card comes back after the next install)
+      if (tick.checked) set(KEY_OFF, '1');                // from now on: never again
+      set(KEY_VER, APP_VERSION);                          // (kept for older versions / the tests)
       bg.remove();
       if (after) after();
     };

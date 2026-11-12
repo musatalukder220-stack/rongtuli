@@ -468,18 +468,26 @@ const History = {};
     const tcan = U.canvas(cw, ch), t = tcan.getContext('2d');
     prep(t);
     if (L.sw > 0) { t.strokeStyle = l.stroke.color; t.lineWidth = L.sw * 2; pass(t, 'stroke'); }
-    if (l.grad && l.grad.stops && l.grad.stops.length > 1) {
+    if ((l.grad && l.grad.stops && l.grad.stops.length > 1) || l.texture) {
       const gcan = U.canvas(cw, ch), g = gcan.getContext('2d');
       prep(g);
       g.fillStyle = '#fff'; pass(g, 'mask');
       g.globalCompositeOperation = 'source-in';
-      g.fillStyle = Layers.gradient(g, l.grad, L.box[0], L.box[1], L.box[2], L.box[3]);
-      g.fillRect(-L.M, -L.M, fullW, fullH);
+      if (l.texture) {
+        /* a picture inside the letters (the Style menu's Texture): it is fitted over the words */
+        const bw = L.box[2] || fullW, bh = L.box[3] || fullH;
+        const k = Math.max(bw / l.texture.width, bh / l.texture.height);
+        const dw = l.texture.width * k, dh = l.texture.height * k;
+        g.drawImage(l.texture, L.box[0] + (bw - dw) / 2, L.box[1] + (bh - dh) / 2, dw, dh);
+      } else {
+        g.fillStyle = Layers.gradient(g, l.grad, L.box[0], L.box[1], L.box[2], L.box[3]);
+        g.fillRect(-L.M, -L.M, fullW, fullH);
+      }
       t.setTransform(1, 0, 0, 1, 0, 0);
       t.drawImage(gcan, 0, 0);
     } else pass(t, 'fill');
 
-    const out = U.canvas(cw, ch), o = out.getContext('2d');
+    const out = U.canvas(cw, ch), o = out.getContext('2d', { willReadFrequently: true });   // (trimBox reads it once)
     if (L.bub) {
       o.save();
       o.setTransform(q, 0, 0, q, L.M * q, L.M * q);
@@ -501,8 +509,32 @@ const History = {};
     }
     o.drawImage(tcan, 0, 0);
     l._cache = { canvas: out, q: want, w: L.w, h: L.h, M: L.M };
+    l._cache.tb = trimBox(o, cw, ch, q, L);     // where the words really are: the selection box hugs them
     return l._cache;
   };
+  /* The real extent of the drawn words (they are laid out inside a box with room for a stroke, so the drawn
+     picture is bigger than the letters).  Returns the box in the text's own coordinates, so the selection
+     frame can sit exactly on the letters like the app in the owner's video.  Scanned on a small copy: fast. */
+  function trimBox(ctx, cw, ch, q, L) {
+    try {
+      const k = Math.min(1, 240 / Math.max(cw, ch));
+      const w = Math.max(1, Math.round(cw * k)), hh = Math.max(1, Math.round(ch * k));
+      const sc = U.canvas(w, hh), sx = sc.getContext('2d', { willReadFrequently: true });  // (a small copy: cheap)
+      sx.drawImage(ctx.canvas, 0, 0, w, hh);
+      const d = sx.getImageData(0, 0, w, hh).data;
+      let x0 = w, y0 = hh, x1 = -1, y1 = -1;
+      for (let y = 0; y < hh; y++) {
+        for (let x = 0; x < w; x++) {
+          if (d[(y * w + x) * 4 + 3] > 6) { if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; }
+        }
+      }
+      if (x1 < x0 || y1 < y0) return null;
+      const toL = (v) => v / k / q;                     // small-canvas px -> the text's own px
+      const fullW = cw / q, fullH = ch / q;
+      return { X0: -fullW / 2 + toL(x0), Y0: -fullH / 2 + toL(y0), W: Math.max(1, toL(x1 + 1 - x0)), H: Math.max(1, toL(y1 + 1 - y0)) };
+    } catch (e) { return null; }
+  }
+
   /* How far sideways the words sit.  The nudge is kept as a % of the picture's width (the same on every
      screen) and turned into pixels here; it MOVES the layer, so the selection box goes with the words. */
   TextRender.shift = function (l) {

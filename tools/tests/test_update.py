@@ -73,6 +73,17 @@ async def main():
         await p.evaluate("RT.Forced.hide()")
         await p.evaluate("window.rtUpdate('9.9', 'From the app', false, 'https://github.com/x/RongTuli-9.9.apk')")
         await p.wait_for_selector('#ver-go', timeout=6000)
+        # the card is news: a newer version is shown on every open until the app itself is updated
+        await p.evaluate("(() => { document.querySelectorAll('.ver-bg,.ver-wrap,#vercard').forEach(e => e.remove()); })()")
+        await p.evaluate("localStorage.setItem('rt-update-seen', '9.9')")
+        await p.reload(); await p.wait_for_function('window.RT', timeout=20000); await p.wait_for_timeout(1200)
+        again = await p.evaluate("window.rtUpdate('9.9','Gradient text, round logo',false,'') || true")
+        await p.wait_for_timeout(500)
+        card = await p.evaluate("(() => { const t = document.body.innerText; return /Version 9\\.9/.test(t); })()")
+        check('a new version is announced again on the next open', card is True)
+        note = await p.evaluate("document.body.innerText.includes('Gradient text, round logo')")
+        check("the owner's note from latest.json is shown", note is True)
+
         check('the Android half can show the card too', True)
         await p.evaluate("RT.Forced.hide()")
         await p.evaluate("window.rtUpdate('0.1', 'old', false, '')")

@@ -156,12 +156,16 @@ const I = {};
     span.innerHTML = I.svg(name, size);
     return span;
   };
-  /* the app mark: a rounded tile with a brush stroke */
-  I.logo = function (size) {
+  /* the app mark: a rounded tile with a brush stroke.
+     `round` = a true circle right to the edge (for a round frame: no square/white corners peeking out) */
+  I.logo = function (size, round) {
     const s = size || 56;
+    const id = 'lg' + (round ? 'R' : 'T') + String(s).replace('.', '');
     return '<svg viewBox="0 0 64 64" width="' + s + '" height="' + s + '" aria-hidden="true">' +
-      '<defs><linearGradient id="lg1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ff5fa2"/><stop offset=".55" stop-color="#c04bf2"/><stop offset="1" stop-color="#6a5cff"/></linearGradient></defs>' +
-      '<rect x="2" y="2" width="60" height="60" rx="16" fill="url(#lg1)"/>' +
+      '<defs><linearGradient id="' + id + '" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ff5fa2"/><stop offset=".55" stop-color="#c04bf2"/><stop offset="1" stop-color="#6a5cff"/></linearGradient></defs>' +
+      (round
+        ? '<circle cx="32" cy="32" r="32" fill="url(#' + id + ')"/>'
+        : '<rect x="2" y="2" width="60" height="60" rx="16" fill="url(#' + id + ')"/>') +
       '<path d="M18 44c6-1 9-5 10-10l5 5c-2 6-8 9-15 5z" fill="#fff"/>' +
       '<path d="M30 32L46 14c2-2 5 1 3 3L35 37z" fill="#fff"/>' +
       '<circle cx="45" cy="45" r="4" fill="#fff" opacity=".85"/></svg>';

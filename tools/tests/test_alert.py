@@ -37,13 +37,14 @@ async def main():
         await s.shot('alert_welcome')
         await p.click('#wel-close'); await p.wait_for_timeout(300)
         check('CLOSE puts it away', not await p.evaluate("!!document.querySelector('#welbg')"))
-        await p.reload(); await p.wait_for_function('window.RT', timeout=20000); await p.wait_for_timeout(1300)
-        check('a returning user does not see it again', not await p.evaluate("!!document.querySelector('#welbg')"))
-        # a new install = a new version in the app: the card is due once more
-        got = await p.evaluate("(() => { localStorage.setItem('rt-hello-ver', '0.0.1'); return Welcome.wanted(); })()")
-        check('after a new install it comes once more', got is True)
-        # "Don't show this again" is remembered for good
-        await p.evaluate("Welcome.show()"); await p.wait_for_timeout(200)
+        # the owner's rule (1.6): CLOSE does not stop it — the next open shows the card again
+        await p.reload(); await p.wait_for_function('window.RT', timeout=20000); await p.wait_for_timeout(1400)
+        check('the next open shows the card again (CLOSE alone changes nothing)', await p.evaluate("!!document.querySelector('#welbg')"))
+        check('Welcome.wanted() is true on every open until the tick', await p.evaluate("(() => { localStorage.setItem('rt-hello-ver', APP_VERSION); return Welcome.wanted(); })()") is True)
+        # "Don't show this again" is remembered for good (the card is already on the screen after the reload)
+        if not await p.evaluate("!!document.querySelector('#welbg')"):
+            await p.evaluate("Welcome.show()")
+        await p.wait_for_timeout(300)
         await p.click('#wel-never'); await p.click('#wel-close'); await p.wait_for_timeout(200)
         check('the tick stops it for good',
               await p.evaluate("localStorage.getItem('rt-hello-off')") == '1'

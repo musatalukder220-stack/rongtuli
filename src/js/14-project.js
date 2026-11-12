@@ -71,6 +71,8 @@ const Project = {};
     for (const l of src) if (l.type === 'text') { fontsUsed.add(l.font); if (l.spans) for (const q of l.spans) if (q.font) fontsUsed.add(q.font); }
     const pics = [];                               // distinct pictures, in order
     for (const c of bmp) if (c && pics.indexOf(c) < 0) pics.push(c);
+    /* a text may carry a texture (a picture inside its letters): it is packed like a layer picture */
+    for (const l of src) if (l.type === 'text' && l.texture && pics.indexOf(l.texture) < 0) pics.push(l.texture);
     const pin = new Set(pics);
     History.pinned.add(pin);                       // keep undo from recycling these pictures while they are being packed
     const files = [];
@@ -84,6 +86,7 @@ const Project = {};
         if (o.progress) o.progress(++done, pics.length);
       }
       bmp.forEach((c, i) => { if (c) { const e = packed.get(c); layers[i].src = fileOf.get(c).name; layers[i].w = e.w; layers[i].h = e.h; } });
+      src.forEach((l, i) => { if (l.type === 'text' && l.texture && fileOf.get(l.texture)) layers[i].tex = fileOf.get(l.texture).name; });
     } finally { History.pinned.delete(pin); }
     const fonts = [];
     for (const fam of fontsUsed) {
@@ -187,6 +190,10 @@ const Project = {};
           else t[key] = v;
         }
         t.size = U.clamp(num(t.size, 100), 1, 4000);
+        if (l.tex) {                               // the picture inside its letters (the Style menu's Texture)
+          try { t.texture = await toCanvas(await zip.get(String(l.tex))); } catch (e) { notes.push('The picture inside a text could not be loaded'); }
+        }
+        delete t.tex;
         layers.push(t);
       }
     }

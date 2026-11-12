@@ -398,10 +398,10 @@ input[type=range].hue::-webkit-slider-thumb { margin-top: -5px; }
   box-shadow: 0 8px 22px rgba(0, 0, 0, .45), 0 0 22px rgba(255, 180, 120, .35); }
 .wel-logo-in { width: 100%; height: 100%; border-radius: 50%; background: #0c1020; display: flex; align-items: center; justify-content: center;
   overflow: hidden; box-shadow: inset 0 0 0 2px rgba(255, 255, 255, .10); }
-/* the app's tile is drawn a little bigger than the circle, so the circle is filled edge to edge
-   (no white/rounded-square corners peeking out) */
+/* the mark itself is a circle now (I.logo(size, true)), so it fills the frame edge to edge —
+   no square corners, no white ring showing */
 .wel-logo-in { position: relative; }
-.wel-logo-in svg { position: absolute; left: 50%; top: 50%; width: 136%; height: 136%; border-radius: 50%;
+.wel-logo-in svg { position: absolute; left: 50%; top: 50%; width: 100%; height: 100%;
   transform: translate(-50%, -50%); }
 .welcard::after { content: ''; position: absolute; left: 0; right: 0; top: 0; height: 1px;
   background: linear-gradient(90deg, transparent, rgba(255,255,255,.45), transparent); }
@@ -433,9 +433,10 @@ body.locked { overflow: hidden; touch-action: none; }
   box-shadow: 0 0 0 3px rgba(79,139,255,.18), 0 24px 60px rgba(0, 0, 0, .6), 0 0 40px rgba(79,139,255,.25);
   color: #eaf1ff; animation: welpop .22s ease-out; }
 .ver-hero { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
-.ver-logo { width: 62px; height: 62px; border-radius: 50%; background: #0d1a33; border: 2px solid #4f8bff;
+.ver-logo { width: 60px; height: 60px; border-radius: 50%; background: transparent; border: 0;
   display: flex; align-items: center; justify-content: center; flex: 0 0 auto; overflow: hidden;
-  box-shadow: 0 0 18px rgba(79,139,255,.5); }
+  box-shadow: 0 0 0 2px rgba(79,139,255,.95), 0 0 18px rgba(79,139,255,.55); }
+.ver-logo svg { display: block; width: 100%; height: 100%; }
 .ver-hero-txt { flex: 1 1 auto; display: flex; flex-direction: column; gap: 3px; }
 .ver-spark { font-size: 15px; }
 .ver-big { font-size: 17px; font-weight: 800; line-height: 1.25; color: #fff; }
@@ -450,3 +451,11 @@ body.locked { overflow: hidden; touch-action: none; }
   box-shadow: 0 8px 26px rgba(75, 107, 255, .5), inset 0 1px 0 rgba(255,255,255,.25); }
 .ver-go:active { transform: translateY(1px); }
 .ver-tag { text-align: center; font-size: 12px; color: #7f93b8; margin-top: 8px; }
+
+/* ---- the Style menu's gradient row (text) ---- */
+.grad-tabs { margin-bottom: 8px; }
+.grad-row { display: flex; gap: 10px; flex-wrap: wrap; padding: 2px 0 6px; }
+.grad-sw { width: 40px; height: 40px; border-radius: 12px; border: 0; padding: 0;
+  box-shadow: 0 0 0 1px rgba(255,255,255,.18), 0 4px 12px rgba(0,0,0,.35); }
+.grad-sw:active { transform: scale(.94); }
+.btn.wide { width: 100%; }

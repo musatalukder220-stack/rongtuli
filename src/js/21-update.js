@@ -113,7 +113,8 @@ const Updater = {};
     /* the small lines are the owner's own words, in the language the channel is written in;
        when there are none the card shows short English lines (never a machine translation) */
     const lines = (u.lines || []).filter((x) => x && !/^https?:/i.test(x));
-    Forced.show({ version: u.version, note: '', link: updaterLink(u), channel: Updater.CHANNEL,
+    /* `note` is the owner's one-line news ("./latest.json" -> {"note": "Gradient text, round logo"}) */
+    Forced.show({ version: u.version, note: String(u.note || '').slice(0, 120), link: updaterLink(u), channel: Updater.CHANNEL,
                   lines: lines, english: !lines.length });
   };
 
@@ -121,14 +122,14 @@ const Updater = {};
   Updater.start = async function () {
     const u = await Updater.check(false);
     if (!u) return;
-    if (ask(SEEN_KEY) === u.version && !u.force) return;        // said once for this version; "Later" was chosen
-    Updater.open(u);
+    Updater.open(u);            // every open, until the app is updated (the owner's rule for 1.6)
   };
   /* the Android half asks latest.json itself and calls this when it is newer */
   window.rtUpdate = function (version, note, force, link) {
     if (!version || !newer(version, APP_VERSION)) return;
     found = { version: String(version), note: String(note || ''), force: force === true, link: /^https?:\/\//.test(String(link || '')) ? String(link) : Updater.CHANNEL, min: '' };
-    if (ask(SEEN_KEY) === found.version && !found.force) return;
+    /* the owner's rule (1.6): a new version is announced on EVERY open, not only the first time
+       (only "force" is remembered differently — it simply keeps the card up) */
     Updater.open(found);
   };
 

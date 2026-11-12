@@ -32,17 +32,21 @@ const Forced = {};
     location.href = link;
   }
 
+  const ENGLISH_LINES = ['Faster, smoother editing', 'Small fixes all over', 'Your pictures and projects stay'];
   /* the small lines under the heading: the owner's own words from the post (never a translation).
      If the post has none, short English lines are used. */
   function bullets() {
     const told = (info.lines || []).map((s) => String(s).trim())
       .filter((s) => s && !/^https?:/i.test(s) && !/^force$/i.test(s));
     if (told.length) return told.slice(0, 3);
-    return ['Faster, smoother editing', 'Small fixes all over', 'Your pictures and projects stay'];
+    /* latest.json's "note" is the owner's own one-line news (English) — shown as the first line */
+    const note = String(info.note || '').trim();
+    if (note && !/^https?:/i.test(note)) return [note].concat(ENGLISH_LINES).slice(0, 3);
+    return ENGLISH_LINES.slice();
   }
 
   function build() {
-    const img = h('div', { class: 'ver-logo', html: I.logo(64) });
+    const img = h('div', { class: 'ver-logo', html: I.logo(58, true) });
     const list = h('div', { class: 'ver-list' }, bullets().map((t) => h('div', { class: 'ver-li', text: t })));
     const go = h('button', { class: 'ver-go', type: 'button', id: 'ver-go', text: 'Download Now' });
     U.onTap(go, () => openLink(info.link));

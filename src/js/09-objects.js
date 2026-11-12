@@ -98,6 +98,91 @@ const LayersPanel = {};
     });
   };
 
+
+  /* ============================ THE STYLE MENU (text) ============================
+     The owner's video (PicsArt): one Style button opens a menu with tabs — Colour (plain,
+     presets), Gradient (two colours, any angle / radial), Texture (a picture inside the words) —
+     and, under them, Outline / Highlight / Shadow.  Everything here changes the selected text.
+     ============================================================================ */
+  function textStyleMenu(l, touch, commit) {
+    const pad = (...kids) => h('div', { class: 'panel-pad' }, kids);
+    const S = (label, min, max, value, set, x) => UI.slider(Object.assign({ label: label, min: min, max: max, value: value,
+      onInput: (v) => { set(v); touch(); }, onChange: commit }, x || {}));
+    const PRESETS = [
+      [['#ff5fa2', '#6a5cff']], [['#ffd479', '#ff5fa2']], [['#62d9ff', '#3b82f6']], [['#a3e635', '#14b8a6']],
+      [['#f97316', '#ef4444']], [['#ffffff', '#9ca3af']], [['#fde047', '#f97316']], [['#c084fc', '#6a5cff']]
+    ];
+    const setGrad = (a, b, radial) => {
+      l.grad = { x0: 0, y0: 0, x1: radial ? 1 : 1, y1: radial ? 1 : 0, radial: !!radial, stops: [[0, a], [1, b]] };
+      touch(); commit();
+    };
+    const body = h('div');
+    const MARK = (v) => {
+      for (const c of tabs.children) c.classList.toggle('on', c.dataset.t === v);
+      U.clear(body);
+      if (v === 'color') {
+        body.appendChild(h('div', { class: 'sub-h', text: 'Colour' }));
+        body.appendChild(UI.palette({ value: l.grad ? 'none' : l.color, onPick: (c, fin) => { l.grad = null; Layers.setTextStyle(l, 'color', c); touch(); if (fin) commit(); } }));
+        body.appendChild(h('div', { class: 'sub-h', text: 'Gradient presets' }));
+        const g1 = h('div', { class: 'grad-row' });
+        for (const pr of PRESETS) {
+          const b = h('button', { class: 'grad-sw', type: 'button', style: { background: 'linear-gradient(135deg,' + pr[0][0] + ',' + pr[0][1] + ')' }, 'aria-label': 'Gradient' });
+          U.onTap(b, () => { setGrad(pr[0][0], pr[0][1]); U.toast('Gradient added — the Gradient tab changes the colours'); });
+          g1.appendChild(b);
+        }
+        body.appendChild(g1);
+      } else if (v === 'gradient') {
+        const g = l.grad || { x0: 0, y0: 0, x1: 1, y1: 0, radial: false, stops: [[0, l.color || '#ffffff'], [1, '#6a5cff']] };
+        const c0 = (g.stops[0] && g.stops[0][1]) || '#ffffff', c1 = (g.stops[1] && g.stops[1][1]) || '#6a5cff';
+        const put = (a, b, radial, angle) => {
+          const r = (angle || 0) * Math.PI / 180;
+          l.grad = { x0: 0.5 - Math.cos(r) / 2, y0: 0.5 - Math.sin(r) / 2, x1: 0.5 + Math.cos(r) / 2, y1: 0.5 + Math.sin(r) / 2,
+            radial: !!radial, stops: [[0, a], [1, b]] };
+          touch(); commit();
+        };
+        const ang = g.radial ? 0 : Math.round(Math.atan2((g.y1 || 0) - (g.y0 || 0), (g.x1 || 1) - (g.x0 || 0)) * 180 / Math.PI);
+        body.appendChild(h('div', { class: 'sub-h', text: 'From' }));
+        body.appendChild(UI.palette({ value: c0, onPick: (c) => put(c, c1, g.radial, ang) }));
+        body.appendChild(h('div', { class: 'sub-h', text: 'To' }));
+        body.appendChild(UI.palette({ value: c1, onPick: (c) => put(c0, c, g.radial, ang) }));
+        body.appendChild(UI.chips([['0', 'Left → right'], ['90', 'Top → bottom'], ['45', 'Slanted'], ['r', 'Radial']],
+          g.radial ? 'r' : String([0, 90, 45].indexOf(ang) >= 0 ? ang : 45),
+          (v) => { if (v === 'r') put(c0, c1, true, 0); else put(c0, c1, false, +v); }));
+        body.appendChild(S('Angle', 0, 360, ang, (v) => put(c0, c1, false, v)));
+        body.appendChild(h('button', { class: 'btn wide', type: 'button', id: 'tx-grad-off', text: 'Back to one colour',
+          onclick: '' }));
+        U.onTap(body.lastChild, () => { l.grad = null; touch(); commit(); U.toast('One colour again'); });
+      } else {
+        body.appendChild(h('div', { class: 'sub-h', text: 'Texture — a picture inside the words' }));
+        const go = h('button', { class: 'btn pri wide', type: 'button', text: 'Choose a picture', id: 'tx-texture' });
+        U.onTap(go, async () => {
+          const files = await U.pickFiles('image/*', false);
+          if (!files.length) return;
+          const c = await U.fileToCanvas(files[0], 1400);
+          l.texture = c; l.grad = null; touch(); commit();
+          U.toast('The words are filled with your picture');
+        });
+        body.appendChild(go);
+        if (l.texture) {
+          const off = h('button', { class: 'btn wide', type: 'button', text: 'Remove the picture' });
+          U.onTap(off, () => { delete l.texture; touch(); commit(); });
+          body.appendChild(off);
+          body.appendChild(h('p', { class: 'panel-note', text: 'The picture is fitted inside the words (it is kept with the project).' }));
+        } else {
+          body.appendChild(h('p', { class: 'panel-note', text: 'A photo, a pattern, anything — it is shown only inside the letters.' }));
+        }
+      }
+    };
+    const tabs = h('div', { class: 'chips grad-tabs' });
+    for (const t of [['color', 'Color'], ['gradient', 'Gradient'], ['texture', 'Texture']]) {
+      const b = h('button', { class: 'chip' + ((t[0] === 'gradient' && l.grad) || (t[0] === 'color' && !l.grad) || (t[0] === 'texture' && l.texture) ? ' on' : ''), type: 'button', text: t[1], 'data-t': t[0] });
+      U.onTap(b, () => { for (const c of tabs.children) c.classList.remove('on'); b.classList.add('on'); MARK(t[0]); });
+      tabs.appendChild(b);
+    }
+    MARK(l.grad ? 'gradient' : (l.texture ? 'texture' : 'color'));
+    return pad(tabs, body);
+  }
+
   /* ============================ STICKERS ============================ */
   const EMOJI = [
     ['😀', 'Smileys', '😀 😃 😄 😁 😆 😅 😂 🤣 😊 😇 🙂 😉 😍 🥰 😘 😋 😛 😜 🤪 😎 🤩 🥳 😏 😢 😭 😤 😡 🤯 😱 🥺 😴 🤔 🤗 🙄 😬 🤐 😷 🤠 👻 💀 🤖 👽 💩 😈'],
@@ -434,14 +519,7 @@ const LayersPanel = {};
             l.bend ? h('p', { class: 'panel-note', text: 'The bubble is hidden while the text is bent.' }) : null);
         }),
         P('opacity', 'opacity', 'Opacity', () => pad(UI.slider({ label: 'Opacity', min: 0, max: 100, value: Math.round(l.opacity * 100), onInput: (v) => { l.opacity = v / 100; View.request(); }, onChange: commit }))),
-        P('style', 'styletext', 'Style', () => pad(
-          h('div', { class: 'sub-h pl', text: 'Fill' }),
-          UI.palette({ value: l.color, onPick: (c, fin) => { Layers.setTextStyle(l, 'color', c); touch(); if (fin) commit(); } }),
-          h('div', { class: 'sub-h pl', text: 'Font' }),
-          fontPanel(),
-          UI.slider({ label: 'Opacity', min: 0, max: 100, value: Math.round(l.opacity * 100), onInput: (v) => { l.opacity = v / 100; View.request(); }, onChange: commit }),
-          h('div', { class: 'sub-h pl', text: 'Blend' }),
-          UI.chips(BLENDS, l.blend, (v) => { l.blend = v; View.request(); commit(); }))),
+        P('style', 'styletext', 'Style', () => textStyleMenu(l, touch, commit)),
         P('bend', 'bend', 'Bend', () => {
           const arcRow = h('div');
           const fillArc = () => {

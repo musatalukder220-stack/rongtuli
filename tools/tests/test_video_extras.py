@@ -1,7 +1,7 @@
 """Stage 6, second part: the rest of the user's video.
 
   * Shape Mask has a "Tap to hide background" way (a shape window, or the colours kept and the rest covered);
-  * a text layer has a Style panel (Fill, Font, Opacity, Blend), ready-made Style presets, and a Heart bubble;
+  * a text layer has the video's Style menu (Color / Gradient / Texture), ready-made Style presets, and a Heart bubble;
   * an added picture has an Outline and a Style panel;
   * Fit can take the background colour from a tap on the photo;
   * the "Add" sheet holds Shape / Text / Sticker / Add Photo / Background.
@@ -44,8 +44,24 @@ async def main():
         check('a text layer offers Style presets and Style', 'presets' in ids and 'style' in ids, str(ids[:8]))
         await p.evaluate("(() => document.querySelector('#toolbar .tb-item[data-id=style]').click())()")
         await p.wait_for_timeout(300)
+        # the Style menu from the owner's reference video: Color / Gradient / Texture, with gradient presets
+        tabs = await p.evaluate("Array.from(document.querySelectorAll('#panel .grad-tabs .chip')).map(e => e.textContent.trim())")
+        check('the Style panel has Color, Gradient and Texture tabs', tabs == ['Color', 'Gradient', 'Texture'], str(tabs))
         subs = await p.evaluate("Array.from(document.querySelectorAll('#panel .sub-h')).map(e => e.textContent)")
-        check('the Style panel has Fill, Font and Blend', subs[:1] == ['Fill'] and 'Font' in subs and 'Blend' in subs, str(subs))
+        check('the Color tab has a gradient-preset row', 'Gradient presets' in subs, str(subs))
+        await p.evaluate("(() => document.querySelector('#panel .grad-sw').click())()")
+        await p.wait_for_timeout(400)
+        grad = await p.evaluate("(() => { const l = RT.Doc.layers.at(-1); return !!(l.grad && l.grad.stops && l.grad.stops.length === 2); })()")
+        check('a preset fills the words with a gradient', grad is True)
+        await p.evaluate("(() => Array.from(document.querySelectorAll('#panel .grad-tabs .chip')).find(c => c.textContent.trim() === 'Gradient').click())()")
+        await p.wait_for_timeout(300)
+        subs2 = await p.evaluate("Array.from(document.querySelectorAll('#panel .sub-h')).map(e => e.textContent)")
+        ang = await p.evaluate("Array.from(document.querySelectorAll('#panel .chip')).map(e => e.textContent.trim())")
+        check('the Gradient tab has From / To and an angle', subs2[:2] == ['From', 'To'] and 'Radial' in ang, str(subs2) + str(ang[-4:]))
+        await p.evaluate("(() => Array.from(document.querySelectorAll('#panel .grad-tabs .chip')).find(c => c.textContent.trim() === 'Texture').click())()")
+        await p.wait_for_timeout(300)
+        tex = await p.evaluate("Array.from(document.querySelectorAll('#panel button')).map(e => e.textContent.trim())")
+        check('the Texture tab offers a picture inside the words', 'Choose a picture' in tex, str(tex))
         await s.shot('s6_text_style')
         kinds = await p.evaluate("RT.Doc.layers[RT.Doc.layers.length - 1].bubble && RT.Doc.layers[RT.Doc.layers.length - 1].bubble.kind")
         check('the heart bubble is used', kinds == 'heart', str(kinds))

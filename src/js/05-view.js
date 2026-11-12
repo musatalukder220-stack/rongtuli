@@ -105,8 +105,21 @@ const View = {
   /* ---------- selection box + handles ---------- */
   View.selGeom = function (l) {
     const sz = Layers.size(l), s = this.scale;
-    const hw = Math.max(sz.w * l.scaleX * s / 2, 14) + 5, hh = Math.max(sz.h * l.scaleY * s / 2, 14) + 5;
+    /* For text the frame hugs the letters themselves (as in the owner's reference video): the drawn picture
+       has room around the words for a stroke, which would otherwise show as a loose empty box. */
+    let hw, hh, ox = 0, oy = 0;
+    const tb = l.type === 'text' && l._cache && l._cache.tb;
+    if (tb) {
+      const sw = Math.abs(l.scaleX || 1), sh = Math.abs(l.scaleY || 1);
+      hw = Math.max(tb.W * sw * s / 2, 12) + 4;
+      hh = Math.max(tb.H * sh * s / 2, 12) + 4;
+      ox = (tb.X0 + tb.W / 2) * (l.scaleX || 1) * s;
+      oy = (tb.Y0 + tb.H / 2) * (l.scaleY || 1) * s;
+    } else {
+      hw = Math.max(sz.w * l.scaleX * s / 2, 14) + 5; hh = Math.max(sz.h * l.scaleY * s / 2, 14) + 5;
+    }
     const c = Math.cos(l.rotation), sn = Math.sin(l.rotation), ctr = this.toView(l.x, l.y);
+    ctr[0] += ox * c - oy * sn; ctr[1] += ox * sn + oy * c;
     const P = (px, py) => [ctr[0] + px * c - py * sn, ctr[1] + px * sn + py * c];
     const g = { ctr: ctr, c: [P(-hw, -hh), P(hw, -hh), P(hw, hh), P(-hw, hh)], handles: {} };
     if (!l.locked) {
