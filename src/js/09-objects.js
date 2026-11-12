@@ -321,7 +321,20 @@ const LayersPanel = {};
         const pct = h('span', { class: 'nv-pct', text: '%' });
         const show = () => { const n = l.nudge || 0; val.value = (n > 0 ? '+' : '') + n; };   // the % sign sits next to the box
         let step = UI.nudgeStep || 5;                     // remembered while the app is open
-        const apply = (v) => { l.nudge = U.clamp(Math.round(v), -100, 100); Layers.touch(l); View.request(); show(); };
+        /* how far the words may go: never past the edge of the picture (that is what the owner asked for) */
+        const limitPct = () => {
+          const sz = Layers.size(l), W = Doc.width || 1;
+          const room = Math.max(1, (W - sz.w * Math.abs(l.scaleX)) / 2);
+          return U.clamp(Math.floor(room / W * 100), 0, 100);
+        };
+        /* a nudge only moves the words: their picture is not drawn again (that is what made it feel heavy) */
+        const light = () => { Doc._ver++; View.request(); };
+        const apply = (v) => {
+          const lim = limitPct();
+          l.nudge = U.clamp(Math.round(v), -lim, lim);
+          light(); show();
+          if (Math.round(v) !== l.nudge) U.toast('That is as far as the words go inside the picture', 1200);
+        };
         const bump = (dir) => { apply((l.nudge || 0) + dir * step); commit(); };
         const L = h('button', { class: 'btn sz-b', type: 'button', text: '←', 'aria-label': 'Left', id: 'tx-left' });
         const R = h('button', { class: 'btn sz-b', type: 'button', text: '→', 'aria-label': 'Right', id: 'tx-right' });
@@ -343,11 +356,12 @@ const LayersPanel = {};
           el.addEventListener('pointerdown', (e) => e.stopPropagation());
           el.addEventListener('touchstart', (e) => e.stopPropagation(), { passive: true });
         }
+        const roomTxt = h('div', { class: 'panel-note', text: 'The words stay inside the picture (±' + limitPct() + '%)' });
         return h('div', { class: 'nudge' },
           h('div', { class: 'sub-h', text: 'Nudge left / right' }),
           h('div', { class: 'sz-row' }, L, h('label', { class: 'nv-wrap' }, val, pct), R),
           h('div', { class: 'sz-row' }, h('div', { class: 'sz-sl' }, h('div', { class: 'sub-h', text: 'Step for each tap' }), stepInp), stepVal),
-          h('div', { class: 'chips' }, mid));
+          h('div', { class: 'chips' }, mid), roomTxt);
       };
       const sizeRow = () => {
         /* the size of the words: a slider, and − / + for one step at a time */

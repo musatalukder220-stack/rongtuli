@@ -55,7 +55,7 @@ async def main():
         await p.wait_for_selector('#ver-go', timeout=6000)
         txt = await p.evaluate("document.querySelector('.vercard').innerText")
         check('a newer version opens the blocking card itself', await p.evaluate("!!document.querySelector('#verwrap')"))
-        check('the card is in English and carries the version', 'A new version of RongTuli is here!' in txt and 'Version 9.9' in txt, txt[:90])
+        check('the card is in English and carries the version', 'A new version of RongTuli is here!' in txt and 'Version 9.9' in txt, txt[:140])
         check('one button only', await p.evaluate("Array.from(document.querySelectorAll('#verwrap button')).map(b=>b.textContent)") == ['Download Now'])
         check('there is no second sheet (no Update / Later)', await p.evaluate("!document.querySelector('#up-go') && !document.querySelector('#up-later')"))
         await s.shot('s10_update_card')
@@ -63,7 +63,11 @@ async def main():
         await p.evaluate("(window.__u='', window.RTAndroid={setLock(){}, quit(){}, openUrl(u){window.__u=u}}, 1)")
         await p.click('#ver-go')
         await p.wait_for_timeout(250)
-        check('Download Now goes to the Telegram channel', str(await p.evaluate("window.__u")).startswith('https://t.me/rongtuli'), await p.evaluate("window.__u"))
+        # (the owner, 1.5: for now the button starts the download itself — the direct .apk address;
+        #  the Telegram channel comes back later)
+        got = str(await p.evaluate("window.__u"))
+        check('Download Now starts the download (the direct .apk address of this version)',
+              got.startswith('https://github.com/musatalukder220-stack/rongtuli/releases/') and 'RongTuli-9.9.apk' in got, got)
 
         # the Android half calls this
         await p.evaluate("RT.Forced.hide()")

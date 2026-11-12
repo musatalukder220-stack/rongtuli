@@ -57,8 +57,8 @@ const History = {};
   /* corners of the layer box in document coordinates: TL, TR, BR, BL */
   Layers.corners = function (l) {
     const s = Layers.size(l), hw = s.w * l.scaleX / 2, hh = s.h * l.scaleY / 2, c = Math.cos(l.rotation), sn = Math.sin(l.rotation);
-    const ox = l.type === 'text' ? TextRender.shift(l) * l.scaleX : 0;      // (the words may be nudged sideways)
-    return [[-hw, -hh], [hw, -hh], [hw, hh], [-hw, hh]].map((p) => [l.x + (p[0] + ox) * c - p[1] * sn, l.y + (p[0] + ox) * sn + p[1] * c]);
+    const cx = TextRender.baseX ? TextRender.baseX(l) : l.x;      // (a nudged text: the box goes with the words)
+    return [[-hw, -hh], [hw, -hh], [hw, hh], [-hw, hh]].map((p) => [cx + p[0] * c - p[1] * sn, l.y + p[0] * sn + p[1] * c]);
   };
   /* a small map of where a picture is see-through (made once per picture) */
   const alphaMaps = new WeakMap();
@@ -80,7 +80,7 @@ const History = {};
      so a frame with a hole or a cut-out does not swallow taps meant for what is behind it. */
   Layers.hit = function (l, x, y, pad) {
     const s = Layers.size(l), dx = x - l.x, dy = y - l.y, c = Math.cos(-l.rotation), sn = Math.sin(-l.rotation);
-    const lx = dx * c - dy * sn - (l.type === 'text' ? TextRender.shift(l) * l.scaleX : 0), ly = dx * sn + dy * c, bw = s.w * Math.abs(l.scaleX), bh = s.h * Math.abs(l.scaleY);
+    const lx = dx * c - dy * sn, ly = dx * sn + dy * c, bw = s.w * Math.abs(l.scaleX), bh = s.h * Math.abs(l.scaleY);
     if (!(Math.abs(lx) <= bw / 2 + pad && Math.abs(ly) <= bh / 2 + pad)) return false;
     if (l.type !== 'image') return true;
     const m = alphaMap(l.bitmap);
@@ -109,8 +109,7 @@ const History = {};
       }
     } else {
       const c = TextRender.ensure(l);
-      const nx = TextRender.shift(l);                     // the nudge (left / right, in % of the picture's width)
-      ctx.drawImage(c.canvas, -c.w / 2 - c.M + nx, -c.h / 2 - c.M, c.w + 2 * c.M, c.h + 2 * c.M);
+      ctx.drawImage(c.canvas, -c.w / 2 - c.M, -c.h / 2 - c.M, c.w + 2 * c.M, c.h + 2 * c.M);
     }
   };
   Layers.draw = function (ctx, l, bitmapOverride) {
@@ -504,10 +503,31 @@ const History = {};
     l._cache = { canvas: out, q: want, w: L.w, h: L.h, M: L.M };
     return l._cache;
   };
-  /* how far sideways the words sit: the nudge is a % of the picture's width, so it is the same on every screen */
+  /* How far sideways the words sit.  The nudge is kept as a % of the picture's width (the same on every
+     screen) and turned into pixels here; it MOVES the layer, so the selection box goes with the words. */
   TextRender.shift = function (l) {
     if (!l.nudge) return 0;
     return l.nudge / 100 * Math.max(Doc.width || 0, 1);
+  };
+  /* the layer's own x, with its nudge added (the nudge is a real move of the words AND their box) */
+  TextRender.baseX = function (l) { return l.x + (l.type === 'text' ? TextRender.shift(l) : 0); };
+  /* keep a layer inside the picture: the words can never be dragged (or nudged) out of it.
+     Returns the x that is allowed.  (A picture bigger than the canvas may still cover it all.) */
+  Layers.allowedX = function (l, x) {
+    const s = Layers.size(l), half = Math.max(0, (s.w * Math.abs(l.scaleX)) / 2);
+    const W = Doc.width || 0;
+    if (!W || !half) return x;
+    if (half * 2 >= W) return U.clamp(x, W - half, half);       // (wider than the picture: it stays over the middle)
+    return U.clamp(x, half, W - half);
+  };
+  Layers.keepInside = function (l) {
+    if (l.type === 'text' && l.nudge) {
+      /* the % is what the owner reads: turn the words back to a position the picture can hold */
+      const x = TextRender.baseX(l);
+      const ok = Layers.allowedX(l, x);
+      if (Math.abs(ok - x) > 0.5) l.nudge = Math.round(((ok - l.x) / Math.max(1, Doc.width)) * 100);
+    }
+    l.x = Layers.allowedX(l, TextRender.baseX(l));
   };
   TextRender.ensure = function (l) {
     const c = l._cache;

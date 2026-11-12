@@ -274,6 +274,8 @@ const View = {
         if (!g.moved && Math.hypot(dx, dy) < TAP_SLOP) return;
         g.moved = true;
         let nx = g.ox + dx / View.scale, ny = g.oy + dy / View.scale;
+        /* a text (or the words of it) may not be dragged out of the picture */
+        if (l.type === 'text') nx = Layers.allowedX(l, nx);
         const th = 6 / View.scale, guides = [];
         if (Math.abs(nx - Doc.width / 2) < th) { nx = Doc.width / 2; guides.push('v'); }
         if (Math.abs(ny - Doc.height / 2) < th) { ny = Doc.height / 2; guides.push('h'); }

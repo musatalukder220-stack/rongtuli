@@ -142,6 +142,8 @@ const I = {};
   I.has = (name) => !!P[name];
   I.add = (name, body) => { P[name] = body; };
   I.add('paint', '<path d="M5 19c-1.2-1.2-1.4-3.2-.2-4.6L14 5.2a2 2 0 0 1 2.8 0l2 2a2 2 0 0 1 0 2.8L9.6 19.2C8.2 20.4 6.2 20.2 5 19z"/><path d="M12 7l5 5"/><path d="M5 19l2.4-.4"/>');
+  /* Style: three sliders (the Font / Style panel had no symbol at all) */
+  I.add('styletext', '<path d="M4 7h10"/><path d="M4 12h16"/><path d="M4 17h7"/><circle cx="17" cy="7" r="2"/><circle cx="9.5" cy="17" r="2"/>');
   I.add('preset', '<rect x="3" y="4" width="18" height="16" rx="3"/><path d="M7 9h6M7 12.5h4"/><circle cx="16.5" cy="13" r="2.2"/>');
   I.add('removeobj', '<rect x="3" y="4" width="18" height="16" rx="2.5"/><path d="M3 16l4.5-4.5 3.5 3.5"/><circle cx="16.5" cy="9" r="2"/><path d="M9.5 20.5L19 3.5"/><path d="M17.5 15.5l1.2 2.6 2.6 1.2-2.6 1.2-1.2 2.6-1.2-2.6-2.6-1.2 2.6-1.2z"/>');
   I.svg = function (name, size) {

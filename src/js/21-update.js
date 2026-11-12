@@ -25,6 +25,10 @@ const Updater = {};
   ];
   Updater.INFO_URL = Updater.INFO_URLS[0];
   Updater.CHANNEL = 'https://t.me/rongtuli_app';
+  /* the direct address of an app file, made from its version (Download Now opens it and the phone
+     starts the download; latest.json's own "link" is used when that is already an .apk address) */
+  const APK_BASE = 'https://github.com/musatalukder220-stack/rongtuli/releases/latest/download/RongTuli-';
+  function apkFor(version) { return version ? APK_BASE + encodeURIComponent(version) + '.apk' : ''; }
   Updater.NEWS = true;                                                                     // also read the Telegram channel (22-tg.js)                                                       // shown when latest.json has no link
   /* ---- nothing to change below ---- */
   const CHECK_KEY = 'rt-update-check', SEEN_KEY = 'rt-update-seen';
@@ -86,12 +90,18 @@ const Updater = {};
   /* where Download Now goes: the update post in the owner's Telegram channel (that is what the owner
      wants a phone to open — never the GitHub page).  The APK link is only a last resort, for a phone
      where the channel is not known at all. */
+  /* the owner, 1.5: for now Download Now starts the download itself (the direct APK link) — the
+     Telegram channel comes back later, once that way of reading the channel works properly. */
   function updaterLink(u) {
-    if (u && u.tgLink && /^https?:\/\//i.test(u.tgLink)) return u.tgLink;                  // (the post the news came from)
-    if (u && u.fromChannel && typeof TgNews !== 'undefined' && TgNews.channel) return 'https://t.me/' + TgNews.channel();
-    if (typeof TgNews === 'undefined') return (u && u.link) || Updater.CHANNEL;
-    const t = TgNews.channel && TgNews.channel();
-    return t ? 'https://t.me/' + t : ((u && u.link) || Updater.CHANNEL);
+    /* only the number, never the caption it came with */
+    const v = (String((u && u.version) || '').match(/\d{1,3}(?:\.\d{1,3}){0,2}/) || [''])[0];
+    const link = String((u && u.link) || '');
+    /* an .apk address that is really this version (the owner may host it anywhere) */
+    if (/^https?:\/\//i.test(link) && /\.apk(\?|#|$)/i.test(link) && (!v || link.indexOf(v) >= 0)) return link;
+    const direct = apkFor(v);
+    if (direct) return direct;
+    if (/^https?:\/\//i.test(link) && !/^https?:\/\/github\.com\/[^/]+\/[^/]+\/releases/i.test(link)) return link;
+    return Updater.CHANNEL;
   }
   Updater.linkFor = updaterLink;
   Updater.open = function (info) {
