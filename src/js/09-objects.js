@@ -63,6 +63,10 @@ const LayersPanel = {};
     editor('', (text) => {
       if (!text) return;
       const l = Layers.text(text, Object.assign({ font: Fonts.defaultFor(text), color: autoColor(), name: shortName(text) }, preset || {}));
+      /* a long line is broken between words so the words can never run out of the picture
+         (no box, no clipping: the line break happens where the picture ends) */
+      l.wrap = Math.round(Doc.width * 0.92);
+      l.gap = 1;                                  // room round the words, so the box never cuts them
       const c = viewCentre(), s = Layers.size(l);
       let k = Math.max(Doc.width, Doc.height) * 0.075 / l.size;
       k = Math.min(k, Doc.width * 0.88 / s.w, Doc.height * 0.8 / s.h);
@@ -309,22 +313,40 @@ const LayersPanel = {};
       /* the words move left / right, as a % of the picture's width (PixelLab style):
          Nudge shows the arrows and how far the words have gone — tap a % to go back to the middle */
       const nudgeRow = () => {
-        const val = h('span', { class: 'sl-v', text: '%' });
-        const show = () => { val.textContent = (l.nudge >= 0 ? '+' : '') + l.nudge + '%'; };
-        const stepOf = (dir) => {
-          const step = UI.nudgeStep ? UI.nudgeStep() : 5;
-          l.nudge = U.clamp(Math.round((l.nudge || 0) + dir * step), -100, 100);   // (never further than the picture)
-          Layers.touch(l); View.request(); show(); commit();
-        };
+        /* the words move left / right, as a % of the picture's width (PixelLab style).
+           STEP: how far one tap of an arrow goes (1% … 25%) — a small step for a gentle move.
+           The number in the middle can also be typed: tap it, write 3, the words go to +3%. */
+        const val = h('input', { class: 'nv-box', type: 'text', inputmode: 'numeric', id: 'tx-nudge-val',
+          value: ((l.nudge || 0) > 0 ? '+' : '') + (l.nudge || 0), 'aria-label': 'Nudge percent' });
+        const pct = h('span', { class: 'nv-pct', text: '%' });
+        const show = () => { const n = l.nudge || 0; val.value = (n > 0 ? '+' : '') + n; };   // the % sign sits next to the box
+        let step = UI.nudgeStep || 5;                     // remembered while the app is open
+        const apply = (v) => { l.nudge = U.clamp(Math.round(v), -100, 100); Layers.touch(l); View.request(); show(); };
+        const bump = (dir) => { apply((l.nudge || 0) + dir * step); commit(); };
         const L = h('button', { class: 'btn sz-b', type: 'button', text: '←', 'aria-label': 'Left', id: 'tx-left' });
         const R = h('button', { class: 'btn sz-b', type: 'button', text: '→', 'aria-label': 'Right', id: 'tx-right' });
-        U.onTap(L, () => stepOf(-1)); U.onTap(R, () => stepOf(1));
+        U.onTap(L, () => bump(-1)); U.onTap(R, () => bump(1));
+        /* typing a number straight */
+        val.addEventListener('change', () => {
+          const n = parseFloat(String(val.value).replace(/[^0-9.+-]/g, ''));
+          if (isFinite(n)) { apply(n); commit(); } else show();
+        });
+        /* the size of one step */
+        const stepInp = h('input', { type: 'range', min: 1, max: 25, step: 1, value: step, 'aria-label': 'Step', id: 'tx-step' });
+        stepInp.value = step;
+        const stepVal = h('span', { class: 'sl-v', text: step + '%' });
+        stepInp.addEventListener('input', () => { step = +stepInp.value; UI.nudgeStep = step; stepVal.textContent = step + '%'; });
         const mid = h('button', { class: 'btn sz-b', type: 'button', text: 'Middle', 'aria-label': 'Back to the middle', id: 'tx-nudge-0' });
-        U.onTap(mid, () => { l.nudge = 0; Layers.touch(l); View.request(); show(); commit(); });
+        U.onTap(mid, () => { apply(0); commit(); });
         show();
-        for (const el of [L, R, mid]) { el.addEventListener('pointerdown', (e) => e.stopPropagation()); el.addEventListener('touchstart', (e) => e.stopPropagation(), { passive: true }); }
+        for (const el of [L, R, mid, val, stepInp]) {
+          el.addEventListener('pointerdown', (e) => e.stopPropagation());
+          el.addEventListener('touchstart', (e) => e.stopPropagation(), { passive: true });
+        }
         return h('div', { class: 'nudge' },
-          h('div', { class: 'sz-row' }, L, h('div', { class: 'sz-sl' }, h('div', { class: 'sub-h', text: 'Nudge left / right' }), val), R),
+          h('div', { class: 'sub-h', text: 'Nudge left / right' }),
+          h('div', { class: 'sz-row' }, L, h('label', { class: 'nv-wrap' }, val, pct), R),
+          h('div', { class: 'sz-row' }, h('div', { class: 'sz-sl' }, h('div', { class: 'sub-h', text: 'Step for each tap' }), stepInp), stepVal),
           h('div', { class: 'chips' }, mid));
       };
       const sizeRow = () => {
@@ -350,6 +372,15 @@ const LayersPanel = {};
         A('edit', 'edit', 'Edit', () => TextTool.edit(l)),
         P('textsize', 'font', 'Size', () => pad(sizeRow())),
         P('nudge', 'alignC', 'Nudge', () => pad(nudgeRow())),
+        /* ---- the everyday things, right here at the top ---- */
+        P('fill', 'color', 'Fill', () => pad(
+          h('div', { class: 'sub-h', text: 'Fill colour' }),
+          UI.palette({ value: l.color, onPick: (c, fin) => { Layers.setTextStyle(l, 'color', c); touch(); if (fin) commit(); } }),
+          h('div', { class: 'sub-h', text: 'Opacity' }),
+          UI.slider({ label: 'Opacity', min: 0, max: 100, value: Math.round(l.opacity * 100),
+            onInput: (v) => { l.opacity = v / 100; View.request(); }, onChange: commit }),
+          h('div', { class: 'sub-h', text: 'Blend' }),
+          UI.chips(BLENDS, l.blend, (v) => { l.blend = v; touch(); commit(); }))),
         P('presets', 'callout', 'Style presets', () => {
           const wrap = h('div', { class: 'chips' });
           for (const pre of TextTool.PRESETS) {

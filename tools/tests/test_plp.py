@@ -11,7 +11,7 @@ EXPECT = {
     'p07': (1000, 1280, 12, 8, 5.0, None),             # uses fonts built into PixelLab that the app also carries (Neuton, Amaranth)
     'p14': (900, 1280, 25, 10, 4.5, 'Blackout'),
     'p15': (1280, 1280, 14, 7, 3.0, None),
-    'p17': (1600, 1600, 19, 10, 6.0, 'icon fonts'),
+    'p17': (3264, 3264, 19, 10, 6.0, 'icon fonts'),      # the file's own size (a project is not shrunk any more)
 }
 INFO = """(() => ({w: RT.Doc.width, h: RT.Doc.height, n: RT.Doc.layers.length, texts: RT.Doc.layers.filter(l => l.type === 'text').length, name: RT.Doc.name, pid: RT.Doc.pid,
     notes: Array.from(document.querySelectorAll('.notes li')).map(e => e.textContent).join(' | '),

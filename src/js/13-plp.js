@@ -263,10 +263,10 @@ const PLP = {};
     let W, H;
     if (data.bgPhotoForcedDim && bw > 1 && bh > 1) { W = bw; H = bh; }
     else {
-      const long = U.clamp(Math.max(bw, bh), 1280, MAX_DIM);
+      const long = U.clamp(Math.max(bw, bh), 1280, 2 ** 20);  // the file's own size: a project must not lose quality
       if (cw >= ch) { W = long; H = long * ch / cw; } else { H = long; W = long * cw / ch; }
     }
-    const cap = Math.min(1, MAX_DIM / Math.max(W, H));
+    const cap = Math.min(1, Math.sqrt(MAX_PIX / (W * H)));      // only a huge project is made smaller
     W = Math.max(1, Math.round(W * cap)); H = Math.max(1, Math.round(H * cap));
     const k = W / cw;                                  // container px -> document px
 

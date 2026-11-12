@@ -72,6 +72,7 @@ const UI = {};
   /* ---------- slider / chips / palette ---------- */
   UI.slider = function (o) {
     const inp = h('input', { type: 'range', min: o.min, max: o.max, step: o.step || 1, value: o.value, 'aria-label': o.label || 'value', class: o.cls || '' });
+    inp.value = o.value;                                   // (a big max with a step of 1 breaks the attribute alone)
     const val = h('span', { class: 'sl-v' });
     const upd = function () {
       const v = +inp.value;
@@ -404,7 +405,7 @@ const UI = {};
     const files = await U.pickFiles('image/*', false);
     if (!files.length) return;
     try {
-      await U.busy(async () => { const c = await U.fileToCanvas(files[0], MAX_DIM); Doc.fromCanvas(c); showEditor(); }, 'Opening…');
+      await U.busy(async () => { const c = await U.fileToCanvas(files[0], MAX_DIM_PHOTO, { maxPix: MAX_PIX }); Doc.fromCanvas(c); showEditor(); }, 'Opening…');
     } catch (e) { console.error(e); U.toast(e.message || 'Could not open this picture'); }
   }
   UI.openCanvas = function (c) { Doc.fromCanvas(c); showEditor(); };
@@ -420,7 +421,7 @@ const UI = {};
       r = await U.busy(async () => {
         const buf = await U.readAsArrayBuffer(file);
         const kind = Zip.sniff(new Uint8Array(buf, 0, Math.min(16, buf.byteLength)));
-        if (kind === 'png' || kind === 'jpg' || kind === 'webp' || kind === 'gif') return { photo: await U.fileToCanvas(file, MAX_DIM) };
+        if (kind === 'png' || kind === 'jpg' || kind === 'webp' || kind === 'gif') return { photo: await U.fileToCanvas(file, MAX_DIM_PHOTO, { maxPix: MAX_PIX }) };
         if (kind !== 'zip') throw new Error('This is not a project file. Choose a PixelLab .plp file or a ' + APP_NAME + ' project (' + Project.EXT + ').');
         const zip = Zip.open(buf);
         const name = String(file.name || '').replace(/\.[a-z0-9]{2,9}$/i, '');

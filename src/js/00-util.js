@@ -4,9 +4,13 @@
  * 00-util.js : small helpers used everywhere
  * ============================================================ */
 const APP_NAME = 'RongTuli';
-const APP_VERSION = '1.0';
+const APP_VERSION = '1.3';
 const LOW_MEM = (navigator.deviceMemory || 4) <= 2;      // phones with 2 GB of memory or less
-const MAX_DIM = LOW_MEM ? 1600 : 2048;                   // longest side of the working picture (keeps phones from running out of memory)
+/* the working picture is never shrunk for its wide side: a photo keeps every pixel it came with. The only
+   limit is the number of pixels the phone's memory can hold, so the tab cannot be killed on a huge file. */
+const MAX_DIM = 2 ** 20;
+const MAX_PIX = 16e6;                                 // 16 megapixels: a 12 or 16 MP phone photo is kept whole
+const MAX_DIM_PHOTO = 2 ** 20;
 
 const U = {};
 (function () {
@@ -106,16 +110,26 @@ const U = {};
     im.onerror = () => rej(new Error('This file is not an image the browser can open'));
     im.src = src;
   });
-  /* image file -> canvas, shrunk so the longest side is <= maxDim */
-  U.fileToCanvas = async function (file, maxDim) {
-    const url = await U.readAsDataURL(file);
-    const im = await U.loadImage(url);
-    const w = im.naturalWidth || im.width, h = im.naturalHeight || im.height;
+  /* image file -> canvas.  A picture is kept at its own size whenever the phone can hold it (a photo must not
+     lose quality when it is imported); only a really big one is shrunk, and then with the best smoothing. */
+  U.fileToCanvas = async function (file, maxDim, opts) {
+    const cap = maxDim || MAX_DIM;
+    const bitmap = await createImageBitmap(file, { imageOrientation: 'from-image' }).catch(() => null);
+    let im = bitmap;
+    if (!im) {                                             // very old browsers: through an <img>
+      const url = await U.readAsDataURL(file);
+      im = await U.loadImage(url);
+    }
+    const w = im.width || im.naturalWidth, h = im.height || im.naturalHeight;
     if (!w || !h) throw new Error('Empty image');
-    const k = Math.min(1, (maxDim || MAX_DIM) / Math.max(w, h));
-    const c = U.canvas(w * k, h * k), cx = c.getContext('2d');
+    /* the picture keeps its own size unless the phone really cannot hold it
+       (a soft pixel cap as well, so a 100-megapixel file cannot kill the tab) */
+    const k = Math.min(1, cap / Math.max(w, h), opts && opts.maxPix ? Math.sqrt(opts.maxPix / (w * h)) : 1);
+    const cw = Math.max(1, Math.round(w * k)), ch = Math.max(1, Math.round(h * k));
+    const c = U.canvas(cw, ch), cx = c.getContext('2d');
     cx.imageSmoothingEnabled = true; cx.imageSmoothingQuality = 'high';
-    cx.drawImage(im, 0, 0, c.width, c.height);
+    cx.drawImage(im, 0, 0, cw, ch);
+    if (bitmap && bitmap.close) bitmap.close();
     return c;
   };
   U.svgToCanvas = async function (svgText, size) {

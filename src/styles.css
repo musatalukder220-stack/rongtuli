@@ -174,14 +174,30 @@ input[type=range].hue::-webkit-slider-thumb { margin-top: -5px; }
 /* ---------- crop ---------- */
 .crop-info { text-align: center; color: #cfcfcf; font-size: 13px; padding: 8px 0 2px; font-variant-numeric: tabular-nums; }
 
+/* the bottom panel never grows taller than this: the toolbar above the bottom bar always stays visible */
+#panel { max-height: calc(100vh - var(--top-h) - env(safe-area-inset-top, 0px) - 190px); overflow-y: auto;
+  overscroll-behavior: contain; -webkit-overflow-scrolling: touch; scrollbar-width: thin; }
+#toolbar { position: relative; z-index: 3; }
+
 /* ---------- text ---------- */
-.te { position: fixed; inset: 0; z-index: 60; background: rgba(8, 8, 8, .9); display: flex; flex-direction: column; }
+.te { position: fixed; inset: 0; z-index: 60; display: flex; flex-direction: column;
+  background: linear-gradient(180deg, rgba(10, 8, 16, .965), rgba(8, 7, 12, .975));
+  -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); }
 .te-top { background: var(--bg); }
 .te-top { flex: 0 0 auto; height: calc(var(--top-h) + env(safe-area-inset-top, 0px)); padding: env(safe-area-inset-top, 0px) 6px 0; display: flex; align-items: center; justify-content: space-between; font-size: 16px; font-weight: 600; }
 .te-in {
-  flex: 1 1 auto; width: 100%; background: transparent; border: 0; outline: 0; color: #fff; resize: none; text-align: center; padding: 8vh 22px 20px;
-  font-size: 28px; line-height: 1.35; -webkit-user-select: text; user-select: text;
+  flex: 0 1 auto; width: auto; align-self: stretch; background: transparent; border: 0; outline: 0; color: #fff; resize: none;
+  text-align: center; min-height: 168px; max-height: 46vh;
+  padding: 20px 20px 22px; margin: 14px 14px 10px; box-sizing: border-box;
+  font-size: 27px; line-height: 1.45; -webkit-user-select: text; user-select: text;
+  /* the words sit in a clear, framed box: nothing is ever typed outside it, and the photo still shows */
+  border: 1.5px solid rgba(201, 92, 245, .55); border-radius: 20px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, .13), rgba(255, 255, 255, .07));
+  box-shadow: 0 14px 44px rgba(0, 0, 0, .45), inset 0 1px 0 rgba(255, 255, 255, .12);
+  overflow-y: auto; overscroll-behavior: contain;
+  font-kerning: normal; text-rendering: optimizeLegibility; -webkit-font-smoothing: antialiased;
 }
+.te-in:focus { border-color: rgba(214, 122, 255, .95); box-shadow: 0 0 0 3px rgba(201, 92, 245, .22), 0 10px 40px rgba(0, 0, 0, .38); }
 .te-in::placeholder { color: #6d6d6d; }
 .fonts { display: grid; grid-auto-flow: column; grid-template-rows: repeat(2, auto); gap: 8px; padding: 4px 14px 10px; overflow-x: auto; scrollbar-width: none; justify-content: start; }
 .fchip { border: 1px solid #353535; background: #1e1e1e; color: #eee; border-radius: 12px; padding: 8px 14px; font-size: 18px; white-space: nowrap; min-width: 92px; line-height: 1.3; }
@@ -268,8 +284,16 @@ input[type=range].hue::-webkit-slider-thumb { margin-top: -5px; }
 .sz-row .sz-sl .sub-h { margin: 0 0 2px; }
 .sz-row .sz-sl input[type=range] { width: 100%; }
 .sz-row .sz-b { flex: 0 0 auto; padding: 8px 12px; font-size: 13.5px; }
+.nudge { padding: 2px 14px 6px; }
 .nudge .chips { margin-top: 8px; }
-.nudge .sz-sl .sub-h { white-space: nowrap; }
+.nudge .sub-h { white-space: nowrap; }
+/* the nudge number: a clear box with the % sign beside it */
+.nudge .nv-wrap { flex: 1 1 auto; min-width: 0; display: flex; align-items: center; justify-content: center; gap: 8px;
+  background: #1c1c1c; border: 1px solid #353535; border-radius: 12px; padding: 9px 8px; }
+.nudge .nv-box { flex: 0 1 96px; min-width: 0; width: 96px; text-align: center; background: transparent; border: 0; outline: 0;
+  color: #fff; font-size: 17px; font-weight: 600; font-variant-numeric: tabular-nums; -webkit-user-select: text; user-select: text; }
+.nudge .nv-pct { color: var(--dim); font-size: 15px; font-weight: 600; }
+.nudge .sz-row .sz-b { padding: 10px 16px; font-size: 16px; }
 .sz-row .sl-v { min-width: 34px; text-align: center; font-variant-numeric: tabular-nums; font-size: 13.5px; color: #ddd; }
 .shp-groups { padding: 2px 0 8px; }
 .shp-pick .shp-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; padding: 2px 0 8px; }
@@ -353,29 +377,47 @@ input[type=range].hue::-webkit-slider-thumb { margin-top: -5px; }
 .tools-grid .tool-cell { border-bottom: 0; }
 
 /* ---------- the first-open card (Welcome) ---------- */
-.welbg { position: fixed; inset: 0; z-index: 4000; background: rgba(8, 6, 12, .55);
+.welbg { position: fixed; inset: 0; z-index: 4000; background: radial-gradient(120% 90% at 50% 0%, rgba(40, 24, 70, .72), rgba(6, 5, 10, .78));
   -webkit-backdrop-filter: blur(7px); backdrop-filter: blur(7px);
   display: flex; align-items: center; justify-content: center; padding: 18px; }
-.welcard { width: 100%; max-width: 380px; background: #fff; color: #16121c; border-radius: 22px; overflow: hidden;
-  box-shadow: 0 26px 70px rgba(0, 0, 0, .55); animation: welpop .22s ease-out; }
+.welcard { width: 100%; max-width: 372px; border-radius: 24px; overflow: hidden; position: relative;
+  background: #fff;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, .62), 0 0 0 1px rgba(255, 255, 255, .08), 0 0 60px rgba(120, 90, 255, .25);
+  animation: welpop .24s cubic-bezier(.2, .9, .3, 1.2); }
 @keyframes welpop { from { transform: scale(.94); opacity: 0; } to { transform: none; opacity: 1; } }
-.wel-hero { background: #12172b; padding: 18px 16px; display: flex; align-items: center; gap: 12px; }
-.wel-logo { width: 58px; height: 58px; border-radius: 50%; background: #fff; display: flex; align-items: center; justify-content: center;
-  box-shadow: 0 0 0 3px #fff, 0 6px 18px rgba(0,0,0,.35); flex: 0 0 auto; overflow: hidden; }
+.wel-hero { position: relative; padding: 20px 16px 22px; display: flex; align-items: center; gap: 13px;
+  background-color: #131a31;
+  background-image: radial-gradient(120% 140% at 10% 0%, rgba(94, 118, 255, .55), transparent 62%),
+                    radial-gradient(100% 120% at 92% 8%, rgba(201, 92, 245, .42), transparent 66%),
+                    linear-gradient(180deg, #1a2140, #0f1426); }
+.wel-logo { width: 66px; height: 66px; border-radius: 50%; flex: 0 0 auto; padding: 3px;
+  background: conic-gradient(from 200deg, #ffd479, #ff7ac1, #7d6bff, #62d9ff, #ffd479);
+  box-shadow: 0 8px 22px rgba(0, 0, 0, .45), 0 0 22px rgba(255, 180, 120, .35); }
+.wel-logo-in { width: 100%; height: 100%; border-radius: 50%; background: #0c1020; display: flex; align-items: center; justify-content: center;
+  overflow: hidden; box-shadow: inset 0 0 0 2px rgba(255, 255, 255, .10); }
+/* the app's tile is drawn a little bigger than the circle, so the circle is filled edge to edge
+   (no white/rounded-square corners peeking out) */
+.wel-logo-in { position: relative; }
+.wel-logo-in svg { position: absolute; left: 50%; top: 50%; width: 136%; height: 136%; border-radius: 50%;
+  transform: translate(-50%, -50%); }
+.welcard::after { content: ''; position: absolute; left: 0; right: 0; top: 0; height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.45), transparent); }
 .wel-mid { flex: 1 1 auto; display: flex; flex-direction: column; align-items: flex-start; gap: 8px; }
-.wel-pill { background: linear-gradient(90deg, #2f7cf6, #1f5fe0); color: #fff; font-weight: 800; font-size: 17px;
-  padding: 7px 24px; border-radius: 12px; box-shadow: 0 4px 14px rgba(47,124,246,.45); }
-.wel-handle { color: #cfe0ff; font-size: 14.5px; }
-.wel-body { padding: 16px 16px 14px; display: flex; flex-direction: column; gap: 10px; }
-.wel-thanks { font-size: 17px; font-weight: 800; line-height: 1.35; }
-.wel-text { font-size: 14.5px; color: #3c3c46; line-height: 1.45; }
-.wel-never { display: flex; align-items: center; gap: 10px; background: #f1f2f6; border-radius: 12px; padding: 10px 12px;
+.wel-pill { background: linear-gradient(180deg, #4a8dff, #2364e8); color: #fff; font-weight: 800; font-size: 17px;
+  padding: 8px 26px; border-radius: 13px; letter-spacing: .01em;
+  box-shadow: 0 6px 18px rgba(47,124,246,.5), inset 0 1px 0 rgba(255,255,255,.35), inset 0 -1px 0 rgba(0,0,0,.18); }
+.wel-handle { color: #b9cdff; font-size: 14.5px; letter-spacing: .01em; }
+.wel-body { padding: 18px 18px 16px; display: flex; flex-direction: column; gap: 11px; color: #15121b; background: #fff; }
+.wel-thanks { font-size: 18px; font-weight: 800; line-height: 1.32; letter-spacing: -.01em; }
+.wel-text { font-size: 14.5px; color: #3b3b46; line-height: 1.5; }
+.wel-never { display: flex; align-items: center; gap: 10px; background: #f4f5f9; border: 1px solid #e7e8ef; border-radius: 13px; padding: 11px 12px;
   font-size: 14.5px; color: #2b2b33; }
 .wel-never input { width: 20px; height: 20px; accent-color: #6b6b74; }
 .wel-row { display: flex; gap: 10px; margin-top: 2px; }
-.wel-close, .wel-join { flex: 1 1 0; border: 0; border-radius: 12px; padding: 13px 10px; font: inherit; font-weight: 800; font-size: 15.5px; }
-.wel-close { background: #e8eaf0; color: #2b2b33; }
-.wel-join { background: linear-gradient(180deg, #22b24c, #17953c); color: #fff; box-shadow: 0 6px 16px rgba(34,178,76,.35); }
+.wel-close, .wel-join { flex: 1 1 0; border: 0; border-radius: 14px; padding: 14px 10px; font: inherit; font-weight: 800; font-size: 15.5px; letter-spacing: .02em; }
+.wel-close { background: linear-gradient(180deg, #f2f3f7, #e4e6ee); color: #2b2b33; box-shadow: inset 0 1px 0 #fff, 0 1px 2px rgba(0,0,0,.08); }
+.wel-join { background: linear-gradient(180deg, #2fd35f, #17a344); color: #fff;
+  box-shadow: 0 8px 20px rgba(34,178,76,.38), inset 0 1px 0 rgba(255,255,255,.35), inset 0 -1px 0 rgba(0,0,0,.15); }
 
 /* ---------- the blocking "new version" card ---------- */
 body.locked { overflow: hidden; touch-action: none; }

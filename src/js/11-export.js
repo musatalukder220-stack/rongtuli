@@ -19,7 +19,7 @@ const Exporter = {};
   Exporter._pending = null;    // { key, promise }
   Exporter._rendering = false;
   Exporter.render = async function (fmt, quality, maxDim) {
-    const key = [Doc.serial, Doc._ver, fmt, quality || 0.92, maxDim || 0].join('|');
+    const key = [Doc.serial, Doc._ver, fmt, quality || 1, maxDim || 0].join('|');
     if (Exporter._cache && Exporter._cache.key === key) return Exporter._cache.r;
     if (Exporter._pending && Exporter._pending.key === key) return Exporter._pending.promise;
     const ver = Doc._ver, serial = Doc.serial;
@@ -28,7 +28,7 @@ const Exporter = {};
       try {
         const jpg = fmt === 'jpg';
         const c = Doc.flatten({ fill: jpg ? '#ffffff' : null, maxDim: maxDim || 0 });
-        const blob = await toBlob(c, jpg ? 'image/jpeg' : 'image/png', jpg ? (quality || 0.92) : undefined);
+        const blob = await toBlob(c, jpg ? 'image/jpeg' : 'image/png', jpg ? (quality || 1) : undefined);
         const r = { blob: blob, canvas: c, w: c.width, h: c.height, name: APP_NAME + '_' + stamp() + (jpg ? '.jpg' : '.png') };
         if (Doc._ver === ver && Doc.serial === serial) Exporter._cache = { key: key, r: r };      // only keep it if nothing changed while it was made
         return r;
@@ -83,7 +83,9 @@ const Exporter = {};
 
   Exporter.open = function (startFmt) {
     if (!Doc.open) return;
-    let fmt = startFmt || Exporter.autoFormat(), quality = 92, cur = null, url = null, job = 0;
+    /* the saved picture is as good as the picture on screen by default (100 = no JPEG loss);
+       the slider is there for a smaller file, not for the normal case */
+    let fmt = startFmt || Exporter.autoFormat(), quality = 100, cur = null, url = null, job = 0;
     const img = h('img', { class: 'ex-prev', alt: 'Your picture' });
     const info = h('div', { class: 'ex-info', text: 'Preparing…' });
     const q = UI.slider({ label: 'Quality', min: 40, max: 100, value: quality, onChange: (v) => { quality = v; make(); } });

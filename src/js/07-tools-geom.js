@@ -210,7 +210,7 @@ const ResizeTool = {};
 
   /* ============================ RESIZE ============================ */
   ResizeTool.open = function () {
-    const W = Doc.width, H = Doc.height, MAX_SIDE = 4096, MAX_PIX = 12e6;
+    const W = Doc.width, H = Doc.height, MAX_SIDE = 16384, MAX_PIXEL = MAX_PIX;   // the same soft cap as an import
     let lock = true;
     const num = (v) => h('input', { type: 'number', inputmode: 'numeric', min: 16, max: MAX_SIDE, value: v });
     const wi = num(W), hi = num(H);
@@ -230,7 +230,7 @@ const ResizeTool = {};
     U.onTap(go, async () => {
       const nw = Math.round(+wi.value), nh = Math.round(+hi.value);
       if (!(nw >= 16 && nh >= 16)) { U.toast('The smallest size is 16 px'); return; }
-      if (nw > MAX_SIDE || nh > MAX_SIDE || nw * nh > MAX_PIX) { U.toast('Too big for a phone browser. Largest side ' + MAX_SIDE + ' px, 12 megapixels in total'); return; }
+      if (nw > MAX_SIDE || nh > MAX_SIDE || nw * nh > MAX_PIXEL) { U.toast('Too big for a phone browser. Largest side ' + MAX_SIDE + ' px, ' + Math.round(MAX_PIXEL / 1e6) + ' megapixels in total'); return; }
       sh.close();
       if (nw === W && nh === H) return;
       const kx = nw / W, ky = nh / H;

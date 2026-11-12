@@ -149,7 +149,7 @@ const History = {};
   }
   const styleOf = (l) => ({ font: l.font, bold: !!l.bold, italic: !!l.italic, color: l.color });
   const fontStr = (st, px) => (st.italic ? 'italic ' : '') + (st.bold ? 'bold ' : '') + px + 'px ' + Fonts.css(st.font);
-  const quant = (s) => Math.pow(2, Math.ceil(Math.log2(Math.max(s, 0.02)) * 2) / 2);
+  const quant = (s) => Math.pow(2, Math.ceil(Math.log2(Math.max(s, 0.02)) * 4) / 4);   // 8 steps per doubling: crisp letters at any size
   const SPAN_KEYS = ['color', 'font', 'bold', 'italic'];
 
   /* A text layer may carry l.spans = [{s, e, color?, font?, bold?, italic?}]: parts of the text (from index s up to, not
@@ -301,6 +301,10 @@ const History = {};
     if (!bend) {
       const bg = l.bg, padOf = (k) => (bg.on ? (bg[k] != null ? bg[k] : bg.pad) * size / 100 : 0);
       let pl = padOf('pl'), pr = padOf('pr'), pt = padOf('pt'), pb = padOf('pb');
+      /* a gap on every side, so the box drawn round the words is a box the words fit in (never on the edge).
+         Only for text typed in the app: a PixelLab project keeps its exact place and look. */
+      const GAP = l.gap ? size * 0.16 : 0;
+      pl += GAP; pr += GAP; pt += GAP * 0.75; pb += GAP * 0.6;
       if (l.bubble) {
         // a speech bubble: room around the words (more for the round kinds, the words must stay inside the curve) and a tail below
         const th = n * lineH, curved = l.bubble.kind === 'oval' || l.bubble.kind === 'cloud' || l.bubble.kind === 'shout' || l.bubble.kind === 'heart';
@@ -438,11 +442,11 @@ const History = {};
     const L = TextRender.layout(l);
     const want = quant(Math.max(l.scaleX, l.scaleY));
     const fullW = L.w + 2 * L.M, fullH = L.h + 2 * L.M;
-    const q = Math.max(0.02, Math.min(want, 3072 / fullW, 3072 / fullH));
+    const q = Math.max(0.02, Math.min(want, 4096 / fullW, 4096 / fullH));
     const cw = Math.max(1, Math.ceil(fullW * q)), ch = Math.max(1, Math.ceil(fullH * q));
     const prep = function (ctx) {
       ctx.setTransform(q, 0, 0, q, L.M * q, L.M * q);
-      ctx.textBaseline = 'alphabetic'; ctx.textAlign = 'left'; ctx.lineJoin = 'round';
+      ctx.textBaseline = 'alphabetic'; ctx.textAlign = 'left'; ctx.lineJoin = 'round'; ctx.imageSmoothingQuality = 'high';
     };
     /* kind: 'stroke' | 'fill' (each piece in its own colour) | 'mask' (one colour, for the gradient) */
     const pass = function (ctx, kind) {

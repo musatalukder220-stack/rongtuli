@@ -15,13 +15,13 @@
 ## প্রতিবার নতুন ভার্সন বের করার সময় (মোট ৫টা কাজ)
 
 ### ধাপ ১ — নতুন APK বানান
-যেভাবেই বানান (এই চ্যাটে বা অন্য চ্যাটে), শেষে একটা ফাইল পাবেন: `RongTuli-1.1.apk`।
-ভার্সন নম্বরটা আগেরটার চেয়ে **বড়** হতে হবে (`1.1` > `1.0`)।
+যেভাবেই বানান (এই চ্যাটে বা অন্য চ্যাটে), শেষে একটা ফাইল পাবেন: `RongTuli-1.3.apk`।
+ভার্সন নম্বরটা আগেরটার চেয়ে **বড়** হতে হবে (`1.3` > `1.2`)।
 
 ### ধাপ ২ — APK টা MediaFire-এ তুলুন
 1. ফোনে MediaFire অ্যাপ বা `mediafire.com` সাইট খুলুন → **Upload**।
-2. `RongTuli-1.1.apk` ফাইলটা বেছে নিন → আপলোড শেষ হলে **Copy link** চাপুন।
-3. লিংকটা দেখতে হবে এমন: `https://www.mediafire.com/file/xxxx/RongTuli-1.1.apk/file`
+2. `RongTuli-1.3.apk` ফাইলটা বেছে নিন → আপলোড শেষ হলে **Copy link** চাপুন।
+3. লিংকটা দেখতে হবে এমন: `https://www.mediafire.com/file/xxxx/RongTuli-1.3.apk/file`
    ⚠️ **APK আপলোড হলে ফাইলটা "Public" আছে কি না দেখুন** (MediaFire নিজে থেকে পাবলিক করে রাখে)।
 
 > Google Drive-ও চলবে: ফাইল আপলোড → Share → **Anyone with the link** → Copy link।
@@ -31,9 +31,9 @@
 চ্যানেলে গিয়ে **নতুন পোস্ট** করুন, একদম এই ছাঁচে — **প্রথম লাইনটা হুবহু এমন হতে হবে**:
 
 ```
-RongTuli 1.1
+RongTuli 1.3
 Remove আরও ভালো হলো, নতুন ফ্রেম যোগ হয়েছে
-https://www.mediafire.com/file/xxxx/RongTuli-1.1.apk/file
+https://www.mediafire.com/file/xxxx/RongTuli-1.3.apk/file
 ```
 
 - **১ম লাইন:** `RongTuli` + স্পেস + ভার্সন নম্বর ← এটা না মিললে অ্যাপ খবরটা চিনবে না।
@@ -48,7 +48,7 @@ https://www.mediafire.com/file/xxxx/RongTuli-1.1.apk/file
 
 ### ধাপ ৫ — নিজে যাচাই করুন
 নিজের ফোনে অ্যাপ খুলুন (**দিনে একবার** চেক হয়)। দেখবেন:
-- হোম পেজে সোনালি-গোলাপি স্ট্রিপ: **"New version 1.1 — Remove আরও ভালো হলো…" [Update]**
+- হোম পেজে সোনালি-গোলাপি স্ট্রিপ: **"New version 1.3 — ছবির কোয়ালিটি আরও ভালো…" [Update]**
 - আর একবার শীটও আসবে: **Update** → ভেতরের পেজ → **Open the download link** → MediaFire → APK নামবে → ইনস্টল।
 
 ---
@@ -71,7 +71,7 @@ https://www.mediafire.com/file/xxxx/RongTuli-1.1.apk/file
    নিজে করতে না চাইলে অ্যাসিস্ট্যান্টকে বলবেন — এক কমান্ডে করে দেবে।
 2. **এক কমান্ডে সব (কম্পিউটার থাকলে):**
    ```bash
-   python3 tools/publish.py --file RongTuli-1.1.apk --version 1.1 --note "Remove আরও ভালো"
+   python3 tools/publish.py --file RongTuli-1.3.apk --version 1.3 --note "কোয়ালিটি, লেখা, Nudge"
    ```
    APK আপলোড (gofile), `latest.json` লেখা, আর টেলিগ্রাম পোস্টের লেখা তৈরি — সব একসাথে; শেষে যে লেখাটা দেখাবে, সেটা চ্যানেলে পেস্ট করলেই হবে।
    (`--link https://...` দিলে আপলোড বাদ দিয়ে ওই লিংকই ব্যবহার করবে।)

@@ -48,7 +48,7 @@ const Welcome = {};
     const join = h('button', { class: 'wel-join', type: 'button', id: 'wel-join', text: 'JOIN NOW' });
     const card = h('div', { class: 'welcard', role: 'dialog', 'aria-label': 'Welcome' },
       h('div', { class: 'wel-hero' },
-        h('div', { class: 'wel-logo', html: I.logo(58) }),
+        h('div', { class: 'wel-logo' }, h('div', { class: 'wel-logo-in', html: I.logo(46) })),
         h('div', { class: 'wel-mid' },
           h('div', { class: 'wel-pill', text: 'Welcome' }),
           h('div', { class: 'wel-handle', text: '@' + Welcome.channel() }))),

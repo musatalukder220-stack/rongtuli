@@ -62,7 +62,7 @@ const CalloutTool = {};
     function plan() {
       const q = mem.ratio.split(':'), a = +q[0] / +q[1], s = mem.size / 100;
       let nw = Math.max(W, H * a) / s, nh = nw / a;
-      const k = Math.min(1, MAX_DIM / Math.max(nw, nh));
+      const k = Math.min(1, Math.sqrt(MAX_PIX / (nw * nh)));     // only a huge canvas is made smaller
       nw = Math.max(1, Math.round(nw * k)); nh = Math.max(1, Math.round(nh * k));
       return [nw, nh, k];
     }
@@ -182,7 +182,7 @@ const CalloutTool = {};
         const g = geo();
         let k = 1;
         if (g.out) {
-          k = Math.min(1, MAX_DIM / Math.max(g.nw, g.nh));
+          k = Math.min(1, Math.sqrt(MAX_PIX / (g.nw * g.nh)));   // only a huge canvas is made smaller
           const ops = [{ t: 'translate', dx: g.b, dy: g.b }];
           if (k < 1) ops.push({ t: 'scale', k: k });
           Doc.transform(ops, g.nw * k, g.nh * k);
