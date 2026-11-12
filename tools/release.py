@@ -312,8 +312,9 @@ def do_release(a):
         say('  APK release: ' + new)
     if not link:
         die('no download link')
-    put_file(repo, 'latest.json', latest_json(a.version, link, a.note, a.force),
-             'latest.json → ' + a.version)
+    doc = latest_json(a.version, link, a.note, a.force)
+    open(os.path.join(ROOT, 'latest.json'), 'w', encoding='utf-8').write(doc)     # (pushed with the source too)
+    put_file(repo, 'latest.json', doc, 'latest.json → ' + a.version)
     j = check_raw(raw_url(repo, a.branch))
     say('\nlatest.json now: ' + (json.dumps(j, ensure_ascii=False) if j else '(not visible yet)'))
     say('Done — everyone with an older app is told on their next start.')
