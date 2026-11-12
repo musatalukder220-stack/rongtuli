@@ -20,9 +20,8 @@ const Updater = {};
   /* where latest.json lives.  Two copies of the same file are asked in turn: GitHub's mirror
      (cdn.jsdelivr.net) answers at once with the newest text, the plain raw address is the fallback. */
   Updater.INFO_URLS = [
-    'https://raw.githubusercontent.com/musatalukder220-stack/rongtuli/main/latest.json',                       // the file itself
-    'https://cdn.jsdelivr.net/gh/musatalukder220-stack/rongtuli/latest.json',                                 // a fast mirror
-    'https://cdn.jsdelivr.net/gh/musatalukder220-stack/rongtuli@main/latest.json'                             // (pinned mirror)
+    'https://raw.githubusercontent.com/musatalukder220-stack/rongtuli/main/latest.json',   // the file itself (a few minutes behind at most)
+    'https://cdn.jsdelivr.net/gh/musatalukder220-stack/rongtuli@main/latest.json'          // a mirror, in case GitHub's host is blocked
   ];
   Updater.INFO_URL = Updater.INFO_URLS[0];
   Updater.CHANNEL = 'https://t.me/rongtuli_app';
