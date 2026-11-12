@@ -351,3 +351,57 @@ input[type=range].hue::-webkit-slider-thumb { margin-top: -5px; }
 .flare-cell:active canvas { filter: brightness(1.2); }
 .tools-grid { display: grid; grid-template-columns: repeat(4, 1fr); }
 .tools-grid .tool-cell { border-bottom: 0; }
+
+/* ---------- the first-open card (Welcome) ---------- */
+.welbg { position: fixed; inset: 0; z-index: 4000; background: rgba(8, 6, 12, .55);
+  -webkit-backdrop-filter: blur(7px); backdrop-filter: blur(7px);
+  display: flex; align-items: center; justify-content: center; padding: 18px; }
+.welcard { width: 100%; max-width: 380px; background: #fff; color: #16121c; border-radius: 22px; overflow: hidden;
+  box-shadow: 0 26px 70px rgba(0, 0, 0, .55); animation: welpop .22s ease-out; }
+@keyframes welpop { from { transform: scale(.94); opacity: 0; } to { transform: none; opacity: 1; } }
+.wel-hero { background: #12172b; padding: 18px 16px; display: flex; align-items: center; gap: 12px; }
+.wel-logo { width: 58px; height: 58px; border-radius: 50%; background: #fff; display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 0 0 3px #fff, 0 6px 18px rgba(0,0,0,.35); flex: 0 0 auto; overflow: hidden; }
+.wel-mid { flex: 1 1 auto; display: flex; flex-direction: column; align-items: flex-start; gap: 8px; }
+.wel-pill { background: linear-gradient(90deg, #2f7cf6, #1f5fe0); color: #fff; font-weight: 800; font-size: 17px;
+  padding: 7px 24px; border-radius: 12px; box-shadow: 0 4px 14px rgba(47,124,246,.45); }
+.wel-handle { color: #cfe0ff; font-size: 14.5px; }
+.wel-body { padding: 16px 16px 14px; display: flex; flex-direction: column; gap: 10px; }
+.wel-thanks { font-size: 17px; font-weight: 800; line-height: 1.35; }
+.wel-text { font-size: 14.5px; color: #3c3c46; line-height: 1.45; }
+.wel-never { display: flex; align-items: center; gap: 10px; background: #f1f2f6; border-radius: 12px; padding: 10px 12px;
+  font-size: 14.5px; color: #2b2b33; }
+.wel-never input { width: 20px; height: 20px; accent-color: #6b6b74; }
+.wel-row { display: flex; gap: 10px; margin-top: 2px; }
+.wel-close, .wel-join { flex: 1 1 0; border: 0; border-radius: 12px; padding: 13px 10px; font: inherit; font-weight: 800; font-size: 15.5px; }
+.wel-close { background: #e8eaf0; color: #2b2b33; }
+.wel-join { background: linear-gradient(180deg, #22b24c, #17953c); color: #fff; box-shadow: 0 6px 16px rgba(34,178,76,.35); }
+
+/* ---------- the blocking "new version" card ---------- */
+body.locked { overflow: hidden; touch-action: none; }
+.verwrap { position: fixed; inset: 0; z-index: 5000; background: rgba(6, 5, 10, .72);
+  -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
+  display: flex; align-items: center; justify-content: center; padding: 16px; }
+.vercard { width: 100%; max-width: 372px; border-radius: 20px; padding: 14px 14px 12px;
+  background: linear-gradient(165deg, #0b1b3a 0%, #0a1327 55%, #0a0f1e 100%);
+  border: 1.5px solid rgba(79, 139, 255, .85);
+  box-shadow: 0 0 0 3px rgba(79,139,255,.18), 0 24px 60px rgba(0, 0, 0, .6), 0 0 40px rgba(79,139,255,.25);
+  color: #eaf1ff; animation: welpop .22s ease-out; }
+.ver-hero { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+.ver-logo { width: 62px; height: 62px; border-radius: 50%; background: #0d1a33; border: 2px solid #4f8bff;
+  display: flex; align-items: center; justify-content: center; flex: 0 0 auto; overflow: hidden;
+  box-shadow: 0 0 18px rgba(79,139,255,.5); }
+.ver-hero-txt { flex: 1 1 auto; display: flex; flex-direction: column; gap: 3px; }
+.ver-spark { font-size: 15px; }
+.ver-big { font-size: 17px; font-weight: 800; line-height: 1.25; color: #fff; }
+.ver-v { font-size: 13.5px; color: #9dc0ff; font-weight: 700; }
+.ver-body { display: flex; flex-direction: column; gap: 8px; }
+.ver-b { font-size: 14.5px; font-weight: 800; color: #fff; }
+.ver-list { display: flex; flex-direction: column; gap: 4px; padding: 0 2px; }
+.ver-li { font-size: 13px; color: #b9c9e6; line-height: 1.4; }
+.ver-li::before { content: '• '; color: #4f8bff; font-weight: 800; }
+.ver-go { margin-top: 6px; border: 0; border-radius: 14px; padding: 16px 14px; font: inherit; font-weight: 800; font-size: 19px;
+  color: #fff; background: linear-gradient(90deg, #8b2ff6 0%, #4b6bff 55%, #2f7cf6 100%);
+  box-shadow: 0 8px 26px rgba(75, 107, 255, .5), inset 0 1px 0 rgba(255,255,255,.25); }
+.ver-go:active { transform: translateY(1px); }
+.ver-tag { text-align: center; font-size: 12px; color: #7f93b8; margin-top: 8px; }

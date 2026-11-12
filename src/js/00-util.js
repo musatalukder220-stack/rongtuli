@@ -4,7 +4,7 @@
  * 00-util.js : small helpers used everywhere
  * ============================================================ */
 const APP_NAME = 'RongTuli';
-const APP_VERSION = '1.0';
+const APP_VERSION = '1.1';
 const LOW_MEM = (navigator.deviceMemory || 4) <= 2;      // phones with 2 GB of memory or less
 const MAX_DIM = LOW_MEM ? 1600 : 2048;                   // longest side of the working picture (keeps phones from running out of memory)
 

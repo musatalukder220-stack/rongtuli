@@ -1,4 +1,4 @@
-"""the update news straight from the Telegram channel (22-tg.js + 23-homebar.js)"""
+"""the update news straight from the Telegram channel (22-tg.js) — with the blocking card (24-forced.js)"""
 import asyncio, json, sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
 from pw_common import *
@@ -42,29 +42,14 @@ async def main():
               got and got.get('version') == '9.12' and 'MediaFire' not in (got.get('note') or '')
               and got.get('link', '').startswith('https://www.mediafire.com/'), got)
 
-        # the home page carries the strip
+        # a newer post brings the blocking card (only Download Now; see test_alert.py for its details)
         await p.evaluate("TgNews.check(true)")
-        await p.wait_for_timeout(500)
-        strip = await p.evaluate("(() => { const b = document.querySelector('#newver'); return b ? b.textContent : 'none'; })()")
-        check('the home page shows "New version 9.12" with the note and Update',
-              'New version 9.12' in strip and 'Better Remove' in strip and 'Update' in strip, strip)
-        await s.shot('tg_strip')
-
-        # Update → the sheet → the download link goes with it
-        await p.click('#nv-go')
-        await p.wait_for_timeout(400)
-        check('Update opens the sheet', await p.evaluate("!!document.querySelector('#up-go')"))
-        n = await p.evaluate("document.querySelectorAll('.sheet.show, #sheets .sheet').length")
-        check('only one sheet (not two)', n <= 2, n)
-        await s.shot('tg_sheet')
-
-        # × hides the strip for that version only
-        await p.evaluate("RT.UI.closeSheet ? RT.UI.closeSheet() : document.querySelectorAll('.sheet-h button').forEach(b => b.click())")
-        await p.wait_for_timeout(300)
-        await p.click('#nv-x')
-        await p.wait_for_timeout(200)
-        check('× hides the strip', not await p.evaluate("!!document.querySelector('#newver')"))
-        check('and remembers it for that version', await p.evaluate("localStorage.getItem('rt-strip-hide')") == '9.12')
+        await p.wait_for_timeout(600)
+        card = await p.evaluate("document.querySelector('.vercard') ? document.querySelector('.vercard').innerText : 'none'")
+        check('the blocking card shows the version and the note',
+              'Version 9.12' in card and 'Better Remove' in card, card)
+        check('with a single button', await p.evaluate("[...document.querySelectorAll('#verwrap button')].map(b => b.textContent)") == ['Download Now'])
+        await s.shot('tg_card')
 
         # a version that is not newer (or no channel) changes nothing
         await p.evaluate("localStorage.clear()")

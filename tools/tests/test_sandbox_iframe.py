@@ -5,7 +5,8 @@ async def main():
     async with Session() as s:
         p = s.page
         p.on('requestfailed', lambda r: print('  REQ FAILED', r.url[:80], r.failure))
-        await p.set_content('<body style="margin:0"><iframe id="f" sandbox="allow-scripts" src="http://localhost:8000/index.html" style="border:0;width:390px;height:844px"></iframe></body>', wait_until='domcontentloaded')
+        # the welcome card is not what this test is about (a sandboxed frame cannot remember it anyway)
+        await p.set_content('<body style="margin:0"><iframe id="f" sandbox="allow-scripts" src="http://localhost:8000/index.html?test=1" style="border:0;width:390px;height:844px"></iframe></body>', wait_until='domcontentloaded')
         await p.wait_for_timeout(3000)
         print('frames', [(x.url[:60]) for x in p.frames])
         fr = [x for x in p.frames if x != p.main_frame][0]

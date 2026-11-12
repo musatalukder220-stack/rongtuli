@@ -72,6 +72,7 @@ public class MainActivity extends Activity {
     static final String TAG = "RongTuli";
     static final String HOST = "appassets.androidplatform.net";
     static final String START = "https://" + HOST + "/index.html";
+    private boolean pageLocked = false;      // the page's new-version card is on the screen
     private static final int REQ_FILE = 41, REQ_STORAGE = 42;
 
     private FrameLayout root;
@@ -269,6 +270,10 @@ public class MainActivity extends Activity {
 
     /* ------------------------------------------------------------ Back, pause, end */
     @Override public void onBackPressed() {
+        if (pageLocked) {                                     // the new-version card is up: it decides
+            if (web != null) web.evaluateJavascript("window.rtBack && window.rtBack()", null);
+            return;
+        }
         if (web != null && web.canGoBack()) web.goBack();      // the page closes its top-most sheet / tool / the editor
         else super.onBackPressed();
     }
@@ -537,6 +542,12 @@ public class MainActivity extends Activity {
                     } catch (Exception e) { Log.w(TAG, "rtTgText: " + e); }
                 }
             });
+        }
+        /** the page says whether something is on the screen that must not be left (the new-version card) */
+        @JavascriptInterface public void setLock(final boolean on) { pageLocked = on; }
+        /** the page asked to leave the app (two Back presses on the new-version card) */
+        @JavascriptInterface public void quit() {
+            runOnUiThread(new Runnable() { public void run() { moveTaskToBack(true); } });
         }
         /** back from the update page to the app */
         @JavascriptInterface public void closeUpdate() {

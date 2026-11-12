@@ -17,6 +17,14 @@ class Session:
         self.browser = await self.pw.chromium.launch()
         self.ctx = await self.browser.new_context(viewport={"width": self.w, "height": self.h}, device_scale_factor=self.dpr,
                                                   has_touch=self.touch, is_mobile=self.touch, accept_downloads=True)
+        # a test never gets the "welcome / new version" cards in the way (test_alert.py deletes these keys itself)
+        await self.ctx.add_init_script("""try {
+          if (!localStorage.getItem('rt-test-boot')) {          // only the first load of a test (not after a reload)
+            localStorage.setItem('rt-test-boot', '1');
+            localStorage.setItem('rt-hello-off', '1');         // the welcome card
+            localStorage.setItem('rt-intro-off', '1');         // the blocking new-version card
+          }
+        } catch (e) {}""")
         self.page = await self.ctx.new_page()
         self.page.on("console", lambda m: self.errors.append("console." + m.type + ": " + m.text) if m.type in ("error", "warning") else None)
         self.page.on("pageerror", lambda e: self.errors.append("PAGEERROR: " + str(e)))

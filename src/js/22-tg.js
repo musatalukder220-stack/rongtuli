@@ -23,9 +23,10 @@
  * ============================================================ */
 const TgNews = {};
 (function () {
-  const NAME = 'RongTuli';
+  /* the app's names, as they may be written in a post (any letter case, with a space, in Bengali) */
+  TgNews.names = ['RongTuli', 'Rong Tuli', 'রংতুলি'];
   const KEY = 'rt-tg-check', SEEN = 'rt-tg-seen';
-  const DAY = 24 * 60 * 60 * 1000;
+  const SOON = 8 * 60 * 1000;                              // look again when the app is opened; 8 minutes is plenty
 
   /* the channel, as the owner types it: "@rongtuli_app", "rongtuli_app" or a full link */
   TgNews.channel = function () {
@@ -78,25 +79,44 @@ const TgNews = {};
   }
   TgNews.posts = posts;
 
-  /* one post → { version, note, link } or null.  The download may be the visible text or the link behind
-     a word like "Download", so both are looked at. */
+  /* one post → { version, note, link, lines } or null.
+     The rule the owner asked for: the caption's words do not matter — the APP'S NAME and a
+     VERSION NUMBER do.  "RongTuli 1.1", "🔥 RongTuli আপডেট 1.1 এসেছে!", "RongTuli-1.1.apk",
+     "Rong Tuli v1.1" — all read as 1.1.  A post with no name, or a name with no number, is not news. */
+  const APKNAME = /[\w-]*rong[\w-]*?[v ]?(\d{1,3}(?:\.\d{1,3}){1,2})[\w-]*\.apk/i;
+  function bengaliDigits(s) {                                // ১.১ → 1.1
+    return String(s).replace(/[\u09E6-\u09EF]/g, (d) => String(d.charCodeAt(0) - 0x09E6));
+  }
   function read(post) {
-    const text = typeof post === 'string' ? post : String((post && post.text) || '');
+    const text = bengaliDigits(typeof post === 'string' ? post : String((post && post.text) || ''));
     const hrefs = (post && post.hrefs) || [];
-    const lines = text.split('\n').map((s) => s.trim()).filter(Boolean);
-    for (let i = 0; i < lines.length; i++) {
-      const m = lines[i].match(new RegExp('^' + NAME + '\\s+v?(\\d+(?:\\.\\d+)*)\\b', 'i'));
-      if (!m) continue;
-      let note = '', link = '';
-      for (let j = i + 1; j < lines.length && j < i + 6; j++) {
-        const l = lines[j];
-        if (!link) { const u = l.match(/https?:\/\/\S+/); if (u) { link = u[0]; continue; } }
-        if (!note && l.length > 1) note = l;
-      }
-      if (!link) link = hrefs.find((u) => !/^https?:\/\/(t\.me|telegram\.me)\//i.test(u)) || '';
-      return { version: m[1], note: note.slice(0, 140), link: link };
+    const low = text.toLowerCase();
+    /* where does the app's name appear?  (the earliest one wins) */
+    let at = -1, len = 0;
+    for (const n of TgNews.names) {
+      const i = low.indexOf(n.toLowerCase());
+      if (i >= 0 && (at < 0 || i < at)) { at = i; len = n.length; }
     }
-    return null;
+    if (at < 0) return null;                                 // no app name: not our news
+    /* a version number near the name (right after it, a few words of caption allowed) */
+    let version = '';
+    const tail = text.slice(at + len, at + len + 44);
+    const vm = tail.match(/[vV]?\s?(\d{1,3}(?:\.\d{1,3}){0,2})\b/);
+    if (vm && !/\d/.test(tail.slice(0, vm.index))) version = vm[1];
+    if (!version) { const f = text.match(APKNAME); if (f) version = f[1]; }   // the file's own number
+    if (!version) return null;                               // name but no number: not news
+    /* the note: the line under the name line, and the short lines after it (nothing that is a link) */
+    const lines = text.split('\n').map((s) => s.trim()).filter(Boolean);
+    const nameLine = lines.findIndex((l) => new RegExp(TgNews.names.map((n) => n.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|'), 'i').test(l));
+    const rest = lines.slice(Math.max(0, nameLine + 1)).filter((l) => !/^https?:\/\//i.test(l));
+    let note = rest.length ? rest[0].replace(/^[^\p{L}\p{N}]+/u, '').slice(0, 120) : '';
+    if (/^force$/i.test(note)) note = '';
+    /* the download: a link in the post, else the link behind a word, else the channel itself */
+    let link = '';
+    const u = text.match(/https?:\/\/\S+/);
+    if (u) link = u[0];
+    if (!link) link = hrefs.find((x) => !/^https?:\/\/(t\.me|telegram\.me)\/[^/]+\/?$/i.test(x)) || '';
+    return { version: version, note: note, link: link, lines: rest.slice(0, 4), force: /(^|\n)\s*force\s*($|\n)/i.test(text) };
   }
   TgNews.read = read;
 
@@ -135,17 +155,24 @@ const TgNews = {};
   };
 
   /* at start (and at most once a day): is there something newer? */
+  /* the owner can turn the blocking card off for a while (Settings → "Check for updates" uses it) */
+  const OFF = 'rt-intro-off';                              // set by the tests: no cards at all
   TgNews.check = async function (force) {
     const last = +(ask(KEY) || 0);
-    if (!force && Date.now() - last < DAY) return TgNews.found || null;
+    if (!force && Date.now() - last < SOON) return TgNews.found || null;
     keep(KEY, String(Date.now()));
     try {
       const got = await TgNews.fetch();
       if (!got || !newer(got.version, APP_VERSION)) { TgNews.found = null; return null; }
       if (!TgNews.configured() || /your_channel/i.test(TgNews.channel())) return null;
       got.link = got.link || ('https://t.me/' + TgNews.channel());
+      got.channel = TgNews.channel();
       TgNews.found = got;
-      try { UI.updateStrip(got); } catch (e) { /* the strip is a nicety */ }
+      /* the blocking card — the only way on is Download Now */
+      try {
+        const testPage = /[?&]test=1\b/.test(location.search);
+        if (typeof Forced !== 'undefined' && ask(OFF) !== '1' && !testPage) Forced.show(got);
+      } catch (e) { /* the app still works */ }
       return got;
     } catch (e) {
       return null;                                       // offline, or Telegram did not answer: no trouble
@@ -156,7 +183,8 @@ const TgNews = {};
   TgNews.configured = () => /^[A-Za-z0-9_]{4,}$/.test(TgNews.channel()) && TgNews.channel().toLowerCase() !== 'your_channel';
 
   TgNews.start = function () {
-    setTimeout(() => { TgNews.check(false); }, 6000);    // a few seconds after the app is ready
+    /* after the welcome card has had its moment */
+    setTimeout(() => { TgNews.check(false); }, (typeof Welcome !== 'undefined' && Welcome.wanted()) ? 4200 : 2400);
   };
   document.addEventListener('visibilitychange', () => {
     if (!document.hidden) TgNews.check(false);
