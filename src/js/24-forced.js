@@ -8,8 +8,7 @@
  *   ║  [logo]  ✨  A new version of RongTuli is here!   ║   <- heading, English
  *   ║            Version 1.1 — faster Remove            ║   <- the version that is posted
  *   ║                                                   ║
- *   ║  🔥 New in this release: …                        ║
- *   ║     • … • … • …                                   ║
+ *   ║     • … • … • …  (the owner's own words)          ║
  *   ║  [           Download Now           ]  (violet→blue)
  *   ║  t.me/rongtuli_app                                ║   <- small, under the button
  *   ╚═══════════════════════════════════════════════════╝
@@ -33,13 +32,13 @@ const Forced = {};
     location.href = link;
   }
 
-  /* the small lines under the heading come from the owner's post; a plain one is used if there are none */
+  /* the small lines under the heading: the owner's own words from the post (never a translation).
+     If the post has none, short English lines are used. */
   function bullets() {
-    const note = String(info.note || '').trim().toLowerCase();
-    const told = (info.lines || []).filter((s) => s && !/^https?:/i.test(s) && !/^force$/i.test(s)
-      && s.trim().toLowerCase() !== note);
+    const told = (info.lines || []).map((s) => String(s).trim())
+      .filter((s) => s && !/^https?:/i.test(s) && !/^force$/i.test(s));
     if (told.length) return told.slice(0, 3);
-    return ['Faster and smoother tools', 'Small fixes all over', 'Your pictures and projects stay'];
+    return ['Faster, smoother editing', 'Small fixes all over', 'Your pictures and projects stay'];
   }
 
   function build() {
@@ -47,15 +46,16 @@ const Forced = {};
     const list = h('div', { class: 'ver-list' }, bullets().map((t) => h('div', { class: 'ver-li', text: t })));
     const go = h('button', { class: 'ver-go', type: 'button', id: 'ver-go', text: 'Download Now' });
     U.onTap(go, () => openLink(info.link));
+    /* English only, one button, no note box, no second button: exactly the card the owner described.
+       The version number stays in the heading (so the owner's channel can carry any caption). */
     box = h('div', { class: 'verwrap', id: 'verwrap' },
       h('div', { class: 'vercard', role: 'alertdialog', 'aria-label': 'New version' },
         h('div', { class: 'ver-hero' }, img,
           h('div', { class: 'ver-hero-txt' },
             h('div', { class: 'ver-spark', text: '✨' }),
             h('div', { class: 'ver-big', text: 'A new version of ' + APP_NAME + ' is here!' }),
-            h('div', { class: 'ver-v', text: 'Version ' + info.version + (info.note ? ' — ' + info.note : '') }))),
+            h('div', { class: 'ver-v', text: 'Version ' + info.version }))),
         h('div', { class: 'ver-body' },
-          h('div', { class: 'ver-b', text: "🔥 What's new" }),
           list,
           go,
           h('div', { class: 'ver-tag', text: '@' + info.channel }))));
@@ -67,9 +67,15 @@ const Forced = {};
     return false;
   }
 
+  /* the @name under the button: the settings hold a full address, only the name is shown */
+  function handle(v) {
+    let t = String(v || '').trim().replace(/^@+/, '');
+    t = t.replace(/^https?:\/\//i, '').replace(/^(www\.)?(t\.me|telegram\.me)\//i, '').replace(/\/.*$/, '');
+    return t || 'rongtuli_app';
+  }
   Forced.show = function (o) {
     if (!o || !o.version) return;
-    info = { version: String(o.version), note: String(o.note || ''), link: String(o.link || ''), channel: String(o.channel || 'rongtuli_app'), lines: o.lines || [] };
+    info = { version: String(o.version), note: String(o.note || ''), link: String(o.link || ''), channel: handle(o.channel), lines: o.lines || [] };
     if (!/^https?:\/\//i.test(info.link)) info.link = 'https://t.me/' + info.channel;
     if (Forced.isOpen()) return;
     build();

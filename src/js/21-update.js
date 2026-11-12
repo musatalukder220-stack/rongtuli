@@ -79,32 +79,32 @@ const Updater = {};
     }
   };
 
-  /* the sheet itself */
-  let openFor = '';                                          // which version's sheet is already on the screen
+  /* A newer version was found: the owner's blocking card (25-forced style, one button: Download Now).
+     There is no second sheet any more — the old "Update / Later" sheet is exactly what the owner
+     did not want.  Everything goes through Forced.show(). */
+  let shownFor = '';                                        // which version's card is already on the screen
+  /* where Download Now goes: the update post in the owner's Telegram channel (that is what the owner
+     wants a phone to open — never the GitHub page).  The APK link is only a last resort, for a phone
+     where the channel is not known at all. */
+  function updaterLink(u) {
+    if (u && u.tgLink && /^https?:\/\//i.test(u.tgLink)) return u.tgLink;                  // (the post the news came from)
+    if (u && u.fromChannel && typeof TgNews !== 'undefined' && TgNews.channel) return 'https://t.me/' + TgNews.channel();
+    if (typeof TgNews === 'undefined') return (u && u.link) || Updater.CHANNEL;
+    const t = TgNews.channel && TgNews.channel();
+    return t ? 'https://t.me/' + t : ((u && u.link) || Updater.CHANNEL);
+  }
+  Updater.linkFor = updaterLink;
   Updater.open = function (info) {
     const u = info || found;
     if (!u) { U.toast('You have the newest version (' + APP_VERSION + ')'); return; }
-    if (openFor === u.version && U.$('#up-go')) return;       // already showing: do not stack two sheets
-    /* the steps page inside the app (download → install → your work stays), whichever host holds the APK */
-    const w = new URLSearchParams({ v: u.version, f: '1' });
-    if (u.note) w.set('n', u.note);
-    if (u.link) w.set('u', u.link);                      // MediaFire, Drive, Telegram, GitHub — whatever the owner posted
-    const go = h('button', { class: 'btn pri', type: 'button', id: 'up-go', text: 'Update' });
-    U.onTap(go, () => { sh.close(); location.href = 'update.html?' + w.toString(); });
-    const later = h('button', { class: 'btn', type: 'button', id: 'up-later', text: 'Later' });
-    U.onTap(later, () => { keep(SEEN_KEY, u.version); sh.close(); openFor = ''; });
-    const rows = [
-      h('p', { class: 'up-h', text: 'A new version is ready' }),
-      h('p', { class: 'up-v', text: 'You have ' + APP_VERSION + ' · new is ' + u.version }),
-      u.note ? h('p', { class: 'up-note', text: u.note }) : null,
-      h('p', { class: 'panel-note', text: 'Tap Update, then download the new app from the link and install it over this one. Your pictures and projects stay.' }),
-      h('div', { class: 'row-c' }, go),
-      h('div', { class: 'row-c' }, later),
-      h('p', { class: 'panel-note dim', text: 'Your work is not touched by an update.' })
-    ].filter(Boolean);
-    const sh = UI.sheet('Update', h('div', { class: 'panel-pad up' }, rows));
-    openFor = u.version;
-    return sh;
+    if (typeof Forced === 'undefined') return;               // (the card's own file is missing: stay quiet)
+    if (Forced.isOpen() && shownFor === u.version) return;   // already showing: never stack two cards
+    shownFor = u.version;
+    /* the small lines are the owner's own words, in the language the channel is written in;
+       when there are none the card shows short English lines (never a machine translation) */
+    const lines = (u.lines || []).filter((x) => x && !/^https?:/i.test(x));
+    Forced.show({ version: u.version, note: '', link: updaterLink(u), channel: Updater.CHANNEL,
+                  lines: lines, english: !lines.length });
   };
 
   /* at start (and after a long pause in the background): look, and speak only when there is something newer */

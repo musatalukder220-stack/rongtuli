@@ -116,7 +116,9 @@ const TgNews = {};
     const u = text.match(/https?:\/\/\S+/);
     if (u) link = u[0];
     if (!link) link = hrefs.find((x) => !/^https?:\/\/(t\.me|telegram\.me)\/[^/]+\/?$/i.test(x)) || '';
-    return { version: version, note: note, link: link, lines: rest.slice(0, 4), force: /(^|\n)\s*force\s*($|\n)/i.test(text) };
+    /* the post itself (its own address in the channel), so Download Now can open this post */
+    return { version: version, note: note, link: link, lines: rest.slice(0, 4), tgLink: (post && post.link) || '',
+             force: /(^|\n)\s*force\s*($|\n)/i.test(text) };
   }
   TgNews.read = read;
 
@@ -165,8 +167,10 @@ const TgNews = {};
       const got = await TgNews.fetch();
       if (!got || !newer(got.version, APP_VERSION)) { TgNews.found = null; return null; }
       if (!TgNews.configured() || /your_channel/i.test(TgNews.channel())) return null;
+      got.tgLink = got.tgLink || got.link || null;          // the post the version was read from
       got.link = got.link || ('https://t.me/' + TgNews.channel());
       got.channel = TgNews.channel();
+      got.fromChannel = true;
       TgNews.found = got;
       /* the blocking card — the only way on is Download Now */
       try {

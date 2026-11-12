@@ -4,7 +4,7 @@
  * 00-util.js : small helpers used everywhere
  * ============================================================ */
 const APP_NAME = 'RongTuli';
-const APP_VERSION = '1.3';
+const APP_VERSION = '1.4';
 const LOW_MEM = (navigator.deviceMemory || 4) <= 2;      // phones with 2 GB of memory or less
 /* the working picture is never shrunk for its wide side: a photo keeps every pixel it came with. The only
    limit is the number of pixels the phone's memory can hold, so the tab cannot be killed on a huge file. */
