@@ -25,6 +25,9 @@ const I = {};
     copy: '<rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/>',
     up: '<path d="M12 19V5"/><path d="M6 11l6-6 6 6"/>',
     down: '<path d="M12 5v14"/><path d="M6 13l6 6 6-6"/>',
+    /* the owner's two PixelLab tools: Position (arrows out from a square) and Relative position */
+    position: '<path d="M4 9V5.500A1.500 1.500 0 0 1 5.500 4H9M15 4h3.500A1.500 1.500 0 0 1 20 5.500V9M20 15v3.500a1.500 1.500 0 0 1-1.500 1.500H15M9 20H5.500A1.500 1.500 0 0 1 4 18.500V15"/><path d="M12 8.500v7M8.500 12h7"/>',
+    relpos: '<rect x="8.500" y="8.500" width="7" height="7" rx="1.400"/><path d="M2.500 3v18M21.500 3v18M3 2.500h18M3 21.500h18" opacity=".55"/>',
     front: '<path d="M5 4h14"/><path d="M12 20V9"/><path d="M7 13.500l5-5 5 5"/>',
     backward: '<path d="M5 20h14"/><path d="M12 4v11"/><path d="M7 10.500l5 5 5-5"/>',
     edit: '<path d="M4 20l1-4.500L16.500 4a2.100 2.100 0 0 1 3 3L8 18.500 4 20z"/><path d="M14.500 6l3 3"/>',
@@ -158,9 +161,12 @@ const I = {};
   };
   /* the app mark: a rounded tile with a brush stroke.
      `round` = a true circle right to the edge (for a round frame: no square/white corners peeking out) */
+  let logoN = 0;                       // every drawn logo gets its OWN gradient id
   I.logo = function (size, round) {
     const s = size || 56;
-    const id = 'lg' + (round ? 'R' : 'T') + String(s).replace('.', '');
+    /* (the id must be unique: two cards on the screen with the same id, and the second one turns
+       black the moment the first is taken away — that is the "colour, then black" the owner saw) */
+    const id = 'rtlg' + (++logoN);
     return '<svg viewBox="0 0 64 64" width="' + s + '" height="' + s + '" aria-hidden="true">' +
       '<defs><linearGradient id="' + id + '" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ff5fa2"/><stop offset=".55" stop-color="#c04bf2"/><stop offset="1" stop-color="#6a5cff"/></linearGradient></defs>' +
       (round

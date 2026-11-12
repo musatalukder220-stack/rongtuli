@@ -95,7 +95,8 @@ const History = {};
   };
   /* draw the layer's pixels with its own transform (no opacity / blend) */
   Layers.drawRaw = function (ctx, l, bitmapOverride) {
-    ctx.translate(l.x, l.y);
+    /* a nudged text: the words and their selection box move together (TextRender.baseX) */
+    ctx.translate(l.type === 'text' && TextRender.baseX ? TextRender.baseX(l) : l.x, l.y);
     if (l.rotation) ctx.rotate(l.rotation);
     ctx.scale(l.scaleX * (l.flipH ? -1 : 1), l.scaleY * (l.flipV ? -1 : 1));
     if (l.type === 'image') {

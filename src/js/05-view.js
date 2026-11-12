@@ -118,7 +118,8 @@ const View = {
     } else {
       hw = Math.max(sz.w * l.scaleX * s / 2, 14) + 5; hh = Math.max(sz.h * l.scaleY * s / 2, 14) + 5;
     }
-    const c = Math.cos(l.rotation), sn = Math.sin(l.rotation), ctr = this.toView(l.x, l.y);
+    const c = Math.cos(l.rotation), sn = Math.sin(l.rotation);
+    const ctr = this.toView((l.type === 'text' && TextRender.baseX) ? TextRender.baseX(l) : l.x, l.y);
     ctr[0] += ox * c - oy * sn; ctr[1] += ox * sn + oy * c;
     const P = (px, py) => [ctr[0] + px * c - py * sn, ctr[1] + px * sn + py * c];
     const g = { ctr: ctr, c: [P(-hw, -hh), P(hw, -hh), P(hw, hh), P(-hw, hh)], handles: {} };

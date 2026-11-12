@@ -99,6 +99,124 @@ const LayersPanel = {};
   };
 
 
+
+  /* ============================ POSITION / RELATIVE POSITION ============================
+     The owner's screenshots are from PixelLab:
+
+       POSITION   "move by : 12px"  with a slider, − / +, big ‹ › ^ v arrows and a ✓ / ✕ bar.
+       RELATIVE   six icons in two rows: left edge, centre column, right edge,
+                  top edge, middle line, bottom edge — the layer jumps to that line of
+                  the picture (and of the other layers, for "relative").
+
+     The step is a % of the picture (so it is the same on every picture size) and the px
+     it prints is what that % is on the open picture.  Nothing here draws the words again:
+     the move is a real move of the layer, its box and its words together.
+     ============================================================================ */
+  function positionPanel(l, touch, commit, relative) {
+    const hw = () => Math.max(1, Math.round(Layers.size(l).w * Math.abs(l.scaleX) / 2));
+    const hh = () => Math.max(1, Math.round(Layers.size(l).h * Math.abs(l.scaleY) / 2));
+    const W = () => Doc.width || 1, H = () => Doc.height || 1;
+    /* the allowed middle of the layer, so it never leaves the picture */
+    const fitX = (x) => U.clamp(x, Math.min(hw(), W() / 2), Math.max(W() - hw(), W() / 2));
+    const fitY = (y) => U.clamp(y, Math.min(hh(), H() / 2), Math.max(H() - hh(), H() / 2));
+    /* a move is a move of the layer itself (the words and their box go together) */
+    const doX = (d) => { l.x = Layers.allowedX(l, l.x + d); View.request(); };
+    const doY = (d) => { l.y = fitY(l.y + d); View.request(); };
+
+    /* ---------------- RELATIVE POSITION: the six "jump to the line" buttons ---------------- */
+    if (relative) {
+      const others = Doc.layers.filter((o) => o !== l && o.visible && o.type !== 'bg');
+      /* the lines of the picture (or, when relative, of the other layers when there are any) */
+      const boxes = () => {
+        const list = others.length ? others : [];
+        const xs = [], ys = [];
+        for (const o of list) {
+          const c = Layers.corners(o);
+          xs.push(Math.min(...c.map((p) => p[0])), Math.max(...c.map((p) => p[0])));
+          ys.push(Math.min(...c.map((p) => p[1])), Math.max(...c.map((p) => p[1])));
+        }
+        const L = xs.length ? Math.min(...xs) : 0, R = xs.length ? Math.max(...xs) : W();
+        const T = ys.length ? Math.min(...ys) : 0, B = ys.length ? Math.max(...ys) : H();
+        return { L: L, R: R, T: T, B: B, cx: (L + R) / 2, cy: (T + B) / 2 };
+      };
+      const jump = (kind) => {
+        const b = boxes();
+        if (kind === 'L') l.x = fitX(b.L + hw());
+        if (kind === 'R') l.x = fitX(b.R - hw());
+        if (kind === 'CX') l.x = fitX(b.cx);
+        if (kind === 'T') l.y = fitY(b.T + hh());
+        if (kind === 'B') l.y = fitY(b.B - hh());
+        if (kind === 'CY') l.y = fitY(b.cy);
+        if (l.type === 'text') l.nudge = 0;              // (nudge is a separate %; the jump is the truth)
+        View.request(); commit();
+      };
+      const ICONS = {
+        L: '<svg viewBox="0 0 32 32"><path d="M5 6v20" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><path d="M27 16H12" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><path d="M18 10l-6 6 6 6" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+        CX: '<svg viewBox="0 0 32 32"><path d="M4 16h6M22 16h6" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><path d="M9 16l5-5v10zM23 16l-5-5v10z" fill="currentColor"/><path d="M16 4v9M16 19v9" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>',
+        R: '<svg viewBox="0 0 32 32"><path d="M27 6v20" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><path d="M5 16h15" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><path d="M14 10l6 6-6 6" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+        T: '<svg viewBox="0 0 32 32"><path d="M6 5h20" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><path d="M16 27V12" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><path d="M10 18l6-6 6 6" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+        CY: '<svg viewBox="0 0 32 32"><path d="M16 4v6M16 22v6" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><path d="M16 9l-5 5h10zM16 23l-5-5h10z" fill="currentColor"/><path d="M4 16h9M19 16h9" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>',
+        B: '<svg viewBox="0 0 32 32"><path d="M6 27h20" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><path d="M16 5v15" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><path d="M10 14l6 6 6-6" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+      };
+      /* exactly the owner's screenshot: six icon buttons, two rows of three, no words under them */
+      const cell = (kind, label) => {
+        const b = h('button', { class: 'pos-cell', type: 'button', html: ICONS[kind], title: label, 'aria-label': label, 'data-jump': kind });
+        U.onTap(b, () => jump(kind));
+        return b;
+      };
+      return h('div', { class: 'panel-pad' },
+        h('div', { class: 'pos-grid' },
+          cell('L', 'left edge'), cell('CX', 'centre'), cell('R', 'right edge'),
+          cell('T', 'top edge'), cell('CY', 'middle'), cell('B', 'bottom edge')),
+        h('p', { class: 'panel-note', text: others.length
+          ? 'The layer jumps to the edge (or the middle) of the other layers in the picture.'
+          : 'The layer jumps to the edge (or the middle) of the picture.' }),
+        h('div', { class: 'pos-ok' },
+          h('button', { class: 'pos-check', type: 'button', text: '✓', 'aria-label': 'Done', onclick: '' }),
+          h('button', { class: 'pos-x', type: 'button', text: '✕', 'aria-label': 'Close', onclick: '' })));
+    }
+
+    /* ---------------- POSITION: the small move slider + the big arrows ---------------- */
+    let step = UI.moveStep || 1;                        // a % of the picture's width
+    const px = h('b', { class: 'pos-px', id: 'pos-px' });
+    const head = h('div', { class: 'pos-move', text: 'move by : ' }, px);
+    const upd = () => { px.textContent = Math.round(step / 100 * W()) + 'px'; };
+    upd();
+    const inp = h('input', { type: 'range', min: 1, max: 50, step: 1, value: step, 'aria-label': 'Move step', id: 'pos-step' });
+    inp.value = step;
+    inp.addEventListener('input', () => { step = +inp.value; UI.moveStep = step; upd(); });
+    const minus = h('button', { class: 'pos-round', type: 'button', text: '−', 'aria-label': 'Smaller step', id: 'pos-minus' });
+    const plus = h('button', { class: 'pos-round', type: 'button', text: '+', 'aria-label': 'Bigger step', id: 'pos-plus' });
+    U.onTap(minus, () => { step = U.clamp(step - 1, 1, 50); inp.value = step; UI.moveStep = step; upd(); });
+    U.onTap(plus, () => { step = U.clamp(step + 1, 1, 50); inp.value = step; UI.moveStep = step; upd(); });
+    const arrow = (dir, label, glyph) => {
+      const b = h('button', { class: 'pos-arrow', type: 'button', html: glyph, 'aria-label': label, 'data-move': dir });
+      U.onTap(b, () => {
+        const n = step / 100 * W();
+        if (dir === 'L') doX(-n); else if (dir === 'R') doX(n);
+        else if (dir === 'U') doY(-n); else doY(n);
+        commit();
+      });
+      return b;
+    };
+    const G = (d) => '<svg viewBox="0 0 32 32"><path d="' + d + '" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+    const ok = h('button', { class: 'pos-check', type: 'button', text: '✓', 'aria-label': 'Done' });
+    const no = h('button', { class: 'pos-x', type: 'button', text: '✕', 'aria-label': 'Close' });
+    U.onTap(ok, () => { UI.panelOpenFor = null; UI.setPanel(null); UI.markActive(null); });
+    U.onTap(no, () => { UI.panelOpenFor = null; UI.setPanel(null); UI.markActive(null); });
+    for (const el of [inp, minus, plus]) { el.addEventListener('pointerdown', (e) => e.stopPropagation()); el.addEventListener('touchstart', (e) => e.stopPropagation(), { passive: true }); }
+    return h('div', { class: 'panel-pad pos-pad' },
+      h('div', { class: 'pos-main' },
+        h('div', { class: 'pos-head', text: 'move by : ' }, px),
+        h('div', { class: 'pos-row' }, minus, inp, plus),
+        h('div', { class: 'pos-arrows' },
+          arrow('L', 'Move left', G('M25 16H9m6-6-6 6 6 6')),
+          arrow('R', 'Move right', G('M7 16h16m-6-6 6 6-6 6')),
+          arrow('U', 'Move up', G('M16 25V9m-6 6 6-6 6 6')),
+          arrow('D', 'Move down', G('M16 7v16m-6-6 6 6 6-6')))),
+      h('div', { class: 'pos-side' }, ok, no));
+  }
+
   /* ============================ THE STYLE MENU (text) ============================
      The owner's video (PicsArt): one Style button opens a menu with tabs — Colour (plain,
      presets), Gradient (two colours, any angle / radial), Texture (a picture inside the words) —
@@ -267,6 +385,82 @@ const LayersPanel = {};
     } finally { URL.revokeObjectURL(obj); }
   }
   const ONLINE_CACHE = new Map();      // word -> pictures, kept while the app is open
+  /* ============================ THE STICKER SETUP (the owner's video) ============================
+     In the video a sticker is first set up on its own screen, top to bottom:
+        [ None | colours | Marble | Black friday ]   ← its background / colour
+        Image, Background, AI Background …           ← ways to get one
+        Line   (none / colours)                      ← a border round it
+        Shapes  (the drawn shapes)
+        Add  ·  Duplicate  ·  Balance                ← what to do with it
+     This sheet is that screen.  Picking a colour or a shape puts the sticker straight on the
+     picture (a sticker still has to be placed), and the picture tools of the editor then take
+     over, exactly like the video's next step.
+     ============================================================================ */
+  StickerTool.setup = function (sh, grid, tabs) {
+    U.clear(grid);
+    grid.className = 'st-grid st-setup';
+    /* the background / colour row: none first, then colours, then a marble and a black-friday look */
+    const row = h('div', { class: 'st-bgrow' });
+    const NONE = h('button', { class: 'st-bg none on', type: 'button', 'aria-label': 'No background', text: '⊘' });
+    U.onTap(NONE, () => { for (const c of row.children) c.classList.remove('on'); NONE.classList.add('on'); });
+    row.appendChild(NONE);
+    const SW = ['#ffffff', '#cfcfd6', '#6b6b74', '#ffd1d4', '#ff8a8a', '#ff4d4d', '#e60023', '#c2185b',
+      '#8e24aa', '#4361ee', '#1e88e5', '#26c6da', '#4caf50', '#ffc107', '#ff7043', '#111111'];
+    for (const c of SW) {
+      const b = h('button', { class: 'st-bg', type: 'button', style: { background: c }, 'aria-label': c });
+      U.onTap(b, () => { for (const q of row.children) q.classList.remove('on'); b.classList.add('on'); });
+      row.appendChild(b);
+    }
+    const marble = h('button', { class: 'st-bg marble', type: 'button', 'aria-label': 'Marble' });
+    U.onTap(marble, () => { for (const q of row.children) q.classList.remove('on'); marble.classList.add('on'); });
+    const black = h('button', { class: 'st-bg black', type: 'button', 'aria-label': 'Black Friday' });
+    U.onTap(black, () => { for (const q of row.children) q.classList.remove('on'); black.classList.add('on'); });
+    row.appendChild(marble); row.appendChild(black);
+    /* the line width row (the video's "Line : none / colours") */
+    const lrow = h('div', { class: 'st-lines' });
+    for (const lbl of ['None', 'Thin', 'Medium', 'Thick']) {
+      const b = h('span', { class: 'chip' + (lbl === 'None' ? ' on' : ''), text: lbl });
+      U.onTap(b, () => { for (const q of lrow.children) q.classList.remove('on'); b.classList.add('on'); });
+      lrow.appendChild(b);
+    }
+    /* the stickers themselves: the drawn shapes and the emoji sets, in one place */
+    const all = h('div', { class: 'st-all' });
+    VEC.forEach((sv) => {
+      const b = h('button', { class: 'st-cell', type: 'button', 'aria-label': 'Sticker' }, h('img', { src: 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(sv), alt: '', draggable: 'false' }));
+      U.onTap(b, async () => {
+        try { const c = await U.svgToCanvas(sv, 512); const t = U.trimCanvas(c, 2); sh.close(); addSticker(t ? t.canvas : c); }
+        catch (e) { U.toast('Could not add this sticker'); }
+      });
+      all.appendChild(b);
+    });
+    for (const ch of (EMOJI[0][2] + ' ' + EMOJI[2][2] + ' ' + EMOJI[7][2]).split(' ').slice(0, 60)) {
+      const b = h('button', { class: 'st-cell emo', type: 'button', text: ch, 'aria-label': 'Sticker ' + ch });
+      U.onTap(b, () => { const c = emojiCanvas(ch); if (!c) { U.toast('This phone cannot draw that sticker'); return; } sh.close(); addSticker(c); });
+      all.appendChild(b);
+    }
+    grid.appendChild(h('div', { class: 'st-head', text: 'Sticker' }));
+    grid.appendChild(row);
+    grid.appendChild(h('div', { class: 'st-head', text: 'Line' }));
+    grid.appendChild(lrow);
+    grid.appendChild(h('div', { class: 'st-head', text: 'Shapes & stickers' }));
+    grid.appendChild(all);
+    /* the video's bottom actions */
+    const acts = h('div', { class: 'st-acts' },
+      h('button', { class: 'st-act', type: 'button', text: '+  Add' }),
+      h('button', { class: 'st-act', type: 'button', text: '⧉  Duplicate' }),
+      h('button', { class: 'st-act', type: 'button', text: '⚖  Balance' }));
+    U.onTap(acts.children[0], () => { const first = all.querySelector('.st-cell'); if (first) first.click(); else U.toast('Pick a sticker below'); });
+    U.onTap(acts.children[1], () => {
+      const l = Doc.selected();
+      if (!l) { U.toast('Pick a sticker first'); return; }
+      const c = Doc.duplicate(l.id);
+      if (c) { Doc.select(c.id); History.commit(); View.request(); sh.close(); }
+    });
+    U.onTap(acts.children[2], () => U.toast('Pick a sticker; Balance comes after it is on the picture'));
+    grid.appendChild(acts);
+    for (const c of tabs.children) c.classList.remove('on');
+  };
+
   StickerTool.open = function () {
     const tabs = h('div', { class: 'st-tabs' }), grid = h('div', { class: 'st-grid' });
     const sh = UI.sheet('Stickers', h('div', null, tabs, grid));
@@ -348,7 +542,7 @@ const LayersPanel = {};
       inp.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); run(); } });
     }
     const tab = (icon, label, fn) => { const b = h('button', { class: 'st-tab', type: 'button', title: label, 'aria-label': label }, icon); U.onTap(b, fn); tabs.appendChild(b); return b; };
-    tab(h('small', { text: '★ Shapes' }), 'Shapes', () => show(-1));
+    tab(h('small', { text: '★ Shapes' }), 'Shapes', () => { cur = -2; StickerTool.setup(sh, grid, tabs); });
     EMOJI.forEach((e, i) => tab(e[0], e[1], () => show(i)));
     tab(h('small', { text: '+ Gallery' }), 'From gallery', async () => {
       const files = await U.pickFiles('image/*', false);
@@ -356,7 +550,7 @@ const LayersPanel = {};
       try { const c = await U.fileToCanvas(files[0], 1024); sh.close(); addSticker(c); } catch (e) { U.toast(e.message || 'Could not open this picture'); }
     });
     tab(h('small', { text: '🌐 Online' }), 'Online pictures', () => showOnline());
-    show(-1);
+    StickerTool.setup(sh, grid, tabs);      // what opens first (the video's sticker screen)
   };
 
   /* ============================ ADD PHOTO ============================ */
@@ -471,6 +665,9 @@ const LayersPanel = {};
         A('edit', 'edit', 'Edit', () => TextTool.edit(l)),
         P('textsize', 'font', 'Size', () => pad(sizeRow())),
         P('nudge', 'alignC', 'Nudge', () => pad(nudgeRow())),
+        /* the owner's PixelLab pair: Position (move by px) and Relative position (jump to a line) */
+        P('position', 'position', 'Position', () => positionPanel(l, touch, commit, false)),
+        P('relpos', 'relpos', 'Relative position', () => positionPanel(l, touch, commit, true)),
         /* ---- the everyday things, right here at the top ---- */
         P('fill', 'color', 'Fill', () => pad(
           h('div', { class: 'sub-h', text: 'Fill colour' }),
@@ -580,6 +777,10 @@ const LayersPanel = {};
       );
     }
     items.push(P('blend', 'blend', 'Blend', () => pad(UI.chips(BLENDS, l.blend, (v) => { l.blend = v; View.request(); commit(); }))));
+    if (l.type === 'image') {
+      items.push(P('position', 'position', 'Position', () => positionPanel(l, touch, commit, false)),
+                 P('relpos', 'relpos', 'Relative position', () => positionPanel(l, touch, commit, true)));
+    }
     if (l.type === 'image') {
       items.push(P('imgoutline', 'strokeA', 'Outline', () => pad(
         UI.palette({ value: (l.outline && l.outline.color) || 'none', none: true,
