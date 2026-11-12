@@ -294,7 +294,7 @@ def do_release(a):
     open(F_UTIL, 'w', encoding='utf-8').write(
         re.sub(r"APP_VERSION = '[^']*'", "APP_VERSION = '%s'" % a.version, s, count=1))
     say('  APP_VERSION = %s' % a.version)
-    build_all(with_apk=not a.no_apk)
+    build_all(True)                                     # (the .apk name and its version name come from this number)
     apk = os.path.join(ROOT, 'android', 'RongTuli-%s.apk' % a.version)
     if not a.no_apk:
         if not os.path.exists(apk):
